@@ -612,11 +612,11 @@ class BundleGenerator:
 
         skills: list[Skill] = []
         if keywords:
-            kws = keywords[:20]  # use more keywords for better coverage
-
-            # ── Pass 1: structured field match (tags / role_keywords / task_keywords) ─
-            structured_conditions = [
+            kws = keywords[:20]
+            kw_conditions = [
                 or_(
+                    func.lower(Skill.name).contains(kw.lower()),
+                    func.lower(Skill.description).contains(kw.lower()),
                     func.array_to_string(Skill.role_keywords, ' ').ilike(f'%{kw}%'),
                     func.array_to_string(Skill.task_keywords, ' ').ilike(f'%{kw}%'),
                     func.array_to_string(Skill.tags, ' ').ilike(f'%{kw}%'),
@@ -625,38 +625,14 @@ class BundleGenerator:
             ]
             skills = (
                 self.db.query(Skill)
-                .filter(*base_filters, or_(*structured_conditions))
+                .filter(*base_filters, or_(*kw_conditions))
                 .order_by((Skill.quality_score * 0.7 + Skill.popularity_score * 0.3).desc())
                 .limit(limit * 2)
                 .all()
             )
 
-            # ── Pass 2: broaden to name/description, still keyword-gated ────────────
-            # Never falls back to pure-category padding — keeps only relevant skills.
-            if len(skills) < 12:
-                existing_ids = {s.id for s in skills}
-                name_conditions = [
-                    or_(
-                        func.lower(Skill.name).contains(kw.lower()),
-                        func.lower(Skill.description).contains(kw.lower()),
-                    )
-                    for kw in kws
-                ]
-                extra = (
-                    self.db.query(Skill)
-                    .filter(
-                        Skill.is_active == True,
-                        Skill.tier == 1,
-                        Skill.quality_score >= 4,
-                        or_(*name_conditions),   # STILL keyword-filtered — no topic drift
-                        *([] if cat_filter is None else [cat_filter]),
-                    )
-                    .order_by((Skill.quality_score * 0.7 + Skill.popularity_score * 0.3).desc())
-                    .limit(limit)
-                    .all()
-                )
-                skills.extend([s for s in extra if s.id not in existing_ids])
-
+        # No fallback — if keywords don't match, bundle stays small rather than
+        # getting padded with unrelated skills.
         skills = _dedup_parent_child(skills)
         return skills[:limit]
 
