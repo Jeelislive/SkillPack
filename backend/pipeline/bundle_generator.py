@@ -5,6 +5,7 @@ Uses keyword pre-filtering + Groq AI to select only truly relevant skills.
 """
 
 import json
+import re
 import time
 from openai import OpenAI
 from sqlalchemy.orm import Session
@@ -640,7 +641,6 @@ class BundleGenerator:
             raw = resp.choices[0].message.content.strip()
 
             # Extract the JSON array robustly — handle markdown fences and surrounding text
-            import re
             match = re.search(r'\[.*?\]', raw, re.DOTALL)
             if not match:
                 raise ValueError("No JSON array found in response")
