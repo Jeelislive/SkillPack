@@ -63,12 +63,14 @@ export default function HomePage() {
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [phIdx, setPhIdx] = useState(0);
 
+  const [bundleCount, setBundleCount] = useState(0);
+
   const { ref: s1ref, count: s1 } = useCounter(110000);
-  const { ref: s2ref, count: s2 } = useCounter(13);
+  const { ref: s2ref, count: s2 } = useCounter(bundleCount);
   const { ref: s3ref, count: s3 } = useCounter(5);
 
   useEffect(() => {
-    api.bundles.list().then(setBundles).catch(() => {});
+    api.bundles.list().then((b) => { setBundles(b); setBundleCount(b.length); }).catch(() => {});
     const t = setInterval(() => setPhIdx((i) => (i + 1) % ROLE_EXAMPLES.length), 3000);
     return () => clearInterval(t);
   }, []);
@@ -283,7 +285,7 @@ export default function HomePage() {
             <Terminal size={22} className="text-violet-400" />
           </div>
           <h2 className="text-3xl font-bold mb-4">Ready to upgrade your AI agent?</h2>
-          <p className="text-white/42 mb-9 text-lg">Browse 1,500+ skills and 13 curated bundles. Free forever.</p>
+          <p className="text-white/42 mb-9 text-lg">Browse 1,500+ skills and {bundleCount || "50+"} curated bundles. Free forever.</p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link href="/explore">
               <motion.div
