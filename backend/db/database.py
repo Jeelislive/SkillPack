@@ -1,16 +1,18 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.pool import NullPool
 from config import get_settings
 
 settings = get_settings()
 
-# Async engine (for FastAPI)
+# Async engine — NullPool required for Vercel serverless
+# (no persistent processes, can't maintain a connection pool)
 async_engine = create_async_engine(
     settings.database_url,
     echo=False,
-    pool_size=10,
-    max_overflow=20,
+    poolclass=NullPool,
+    connect_args={"statement_cache_size": 0},  # required for Supabase transaction pooler
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -19,8 +21,11 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-# Sync engine (for Celery workers)
-sync_engine = create_engine(settings.sync_database_url)
+# Sync engine (for cron jobs / pipeline scripts)
+sync_engine = create_engine(
+    settings.sync_database_url,
+    poolclass=NullPool,
+)
 SyncSessionLocal = sessionmaker(bind=sync_engine)
 
 
