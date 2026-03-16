@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import bundles, skills, search, crawl, live
+from api.routes import bundles, skills, search, crawl, live, cron
 
 
 @asynccontextmanager
@@ -41,6 +41,7 @@ app.include_router(skills.router,  prefix="/api/skills",  tags=["skills"])
 app.include_router(search.router,  prefix="/api/search",  tags=["search"])
 app.include_router(crawl.router,   prefix="/api/crawl",   tags=["crawl"])
 app.include_router(live.router,    prefix="/api/live",    tags=["live"])
+app.include_router(cron.router,    prefix="/api/cron",    tags=["cron"])
 
 
 @app.get("/api/health")

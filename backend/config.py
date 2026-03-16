@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     log_level: str = "INFO"
     admin_token: str = "changeme"
+    cron_secret: str = ""
 
     # Tier 1 threshold — skills with install_count >= this get stored in DB
     tier1_min_installs: int = 10

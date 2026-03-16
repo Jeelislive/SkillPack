@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/skill-discovery",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/bundle-curator",
+      "schedule": "0 */3 * * *"
+    }
+  ]
+}
