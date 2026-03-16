@@ -1,14 +1,43 @@
 """
 Bundle Generator
 Creates role-based and task-based skill bundles from the DB.
-Supports 50+ bundles with keyword-driven skill matching.
+Uses keyword pre-filtering + Groq AI to select only truly relevant skills.
 """
 
+import json
+import time
+from openai import OpenAI
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from db.models import Skill, Bundle, BundleCommand
 from pipeline.install_generator import InstallGenerator
+from config import get_settings
 from rich import print
+
+settings = get_settings()
+
+try:
+    _groq = OpenAI(api_key=settings.groq_api_key, base_url=settings.groq_base_url)
+except Exception:
+    _groq = None
+
+_AI_FILTER_PROMPT = """\
+You are curating a skill bundle for developers.
+
+Bundle: {name}
+Description: {description}
+
+From the candidate skills below, select ONLY those that are directly and clearly \
+relevant to this bundle. Be strict — exclude skills from other domains, unrelated \
+tools, or anything only tangentially connected.
+
+Candidate skills (slug | name | tags):
+{skill_list}
+
+Return a JSON array of slugs for the relevant skills, ordered by relevance (best first).
+Return ONLY the JSON array, no explanation, no markdown.
+Example: ["owner/repo/skill1", "owner/repo2"]
+"""
 
 # ── Role Bundles ──────────────────────────────────────────────────────────────
 
@@ -579,6 +608,52 @@ class BundleGenerator:
         self.db = db
         self.install_gen = InstallGenerator()
 
+    def _ai_filter_skills(
+        self, bundle_def: dict, candidates: list[Skill]
+    ) -> list[Skill]:
+        """Use Groq to keep only skills truly relevant to this bundle."""
+        if not _groq or not candidates:
+            return candidates
+
+        # Build compact skill list for the prompt (slug | name | tags)
+        lines = []
+        slug_to_skill = {}
+        for s in candidates:
+            tags = ", ".join((s.tags or [])[:6])
+            lines.append(f"{s.slug} | {s.name} | {tags}")
+            slug_to_skill[s.slug] = s
+
+        skill_list = "\n".join(lines)
+        prompt = _AI_FILTER_PROMPT.format(
+            name=bundle_def["name"],
+            description=bundle_def["description"],
+            skill_list=skill_list,
+        )
+
+        try:
+            resp = _groq.chat.completions.create(
+                model=settings.groq_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+                max_tokens=1024,
+            )
+            raw = resp.choices[0].message.content.strip()
+
+            # Extract the JSON array robustly — handle markdown fences and surrounding text
+            import re
+            match = re.search(r'\[.*?\]', raw, re.DOTALL)
+            if not match:
+                raise ValueError("No JSON array found in response")
+            selected_slugs: list[str] = json.loads(match.group())
+
+            # Preserve Groq's ordering, skip any hallucinated slugs
+            result = [slug_to_skill[slug] for slug in selected_slugs if slug in slug_to_skill]
+            return result if result else candidates  # fallback if Groq returns nothing
+
+        except Exception as e:
+            print(f"[yellow]AI filter failed for '{bundle_def['slug']}': {e} — using keyword results[/yellow]")
+            return candidates
+
     def _get_skills_for_bundle(
         self,
         category: str,
@@ -627,12 +702,11 @@ class BundleGenerator:
                 self.db.query(Skill)
                 .filter(*base_filters, or_(*kw_conditions))
                 .order_by((Skill.quality_score * 0.7 + Skill.popularity_score * 0.3).desc())
-                .limit(limit * 2)
+                .limit(limit * 2)  # fetch 2× candidates for AI to choose from
                 .all()
             )
 
-        # No fallback — if keywords don't match, bundle stays small rather than
-        # getting padded with unrelated skills.
+        # No fallback — no keyword match = no skill added.
         skills = _dedup_parent_child(skills)
         return skills[:limit]
 
@@ -673,28 +747,34 @@ class BundleGenerator:
         self.db.commit()
 
     def generate_all(self):
-        """Generate all role + task bundles (50+)."""
+        """Generate all role + task bundles (50+) with AI curation."""
         all_defs = ROLE_BUNDLES + TASK_BUNDLES
         total = len(all_defs)
-        print(f"[blue]Generating {total} bundles...[/blue]")
+        ai_enabled = _groq is not None
+        print(f"[blue]Generating {total} bundles (AI curation: {'on' if ai_enabled else 'off'})...[/blue]")
 
         generated, skipped = 0, 0
         for i, bundle_def in enumerate(all_defs):
-            skills = self._get_skills_for_bundle(
+            # Step 1: keyword candidates (2× limit so AI has enough to choose from)
+            candidates = self._get_skills_for_bundle(
                 category=bundle_def.get("category", "other"),
                 role_keywords=bundle_def.get("role_keywords"),
                 task_keywords=bundle_def.get("task_keywords"),
                 limit=30,
             )
-            if not skills:
-                print(f"[yellow]  [{i+1}/{total}] '{bundle_def['slug']}': no skills, skipping.[/yellow]")
+            if not candidates:
+                print(f"[yellow]  [{i+1}/{total}] '{bundle_def['slug']}': no candidates, skipping.[/yellow]")
                 skipped += 1
                 continue
+
+            # Step 2: AI filter — keep only truly relevant skills
+            skills = self._ai_filter_skills(bundle_def, candidates)
+            time.sleep(1.5)  # respect Groq rate limits (~30 RPM free tier)
 
             skill_ids = [s.id for s in skills]
             bundle = self._upsert_bundle(bundle_def, skill_ids)
             self._generate_commands(bundle, skills)
-            print(f"[green]  [{i+1}/{total}] '{bundle.slug}': {len(skills)} skills[/green]")
+            print(f"[green]  [{i+1}/{total}] '{bundle.slug}': {len(candidates)} candidates → {len(skills)} skills (AI)[/green]")
             generated += 1
 
-        print(f"[bold green]Done: {generated} bundles generated, {skipped} skipped (no skills).[/bold green]")
+        print(f"[bold green]Done: {generated} bundles generated, {skipped} skipped.[/bold green]")
