@@ -6,13 +6,12 @@ from config import get_settings
 
 settings = get_settings()
 
-# Async engine — NullPool required for Vercel serverless
-# (no persistent processes, can't maintain a connection pool)
+
+# Async engine — NullPool for Vercel serverless (session pooler, port 5432)
 async_engine = create_async_engine(
     settings.database_url,
     echo=False,
     poolclass=NullPool,
-    connect_args={"statement_cache_size": 0},  # required for Supabase transaction pooler
 )
 
 AsyncSessionLocal = async_sessionmaker(
