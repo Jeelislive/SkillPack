@@ -1,12 +1,32 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import bundles, skills, search, crawl, live
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        from scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        print(f"[yellow]Scheduler failed to start: {e}[/yellow]")
+    yield
+    # Shutdown
+    try:
+        from scheduler import stop_scheduler
+        stop_scheduler()
+    except Exception:
+        pass
+
 
 app = FastAPI(
     title="SkillPack API",
     description="Aggregate, curate, and bundle AI agent skills from across the web.",
     version="1.0.0",
     redirect_slashes=False,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -26,3 +46,9 @@ app.include_router(live.router,    prefix="/api/live",    tags=["live"])
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/scheduler/status")
+async def scheduler_status():
+    from scheduler import get_scheduler_status
+    return get_scheduler_status()
