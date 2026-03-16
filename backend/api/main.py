@@ -49,6 +49,19 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/api/db-test")
+async def db_test():
+    import traceback
+    try:
+        from db.database import async_engine
+        async with async_engine.connect() as conn:
+            from sqlalchemy import text
+            result = await conn.execute(text("SELECT 1"))
+            return {"status": "ok", "db": "connected"}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "trace": traceback.format_exc()}
+
+
 @app.get("/api/scheduler/status")
 async def scheduler_status():
     from scheduler import get_scheduler_status
