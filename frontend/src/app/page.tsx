@@ -219,7 +219,7 @@ export default function HomePage() {
               {bundle ? (
                 <BundleCard bundle={bundle} />
               ) : (
-                <div className="h-36 rounded-2xl border border-white/6 bg-white/[0.02] animate-pulse" />
+                <div className="h-36 rounded-2xl border border-white/10 bg-white/[0.04] animate-pulse" />
               )}
             </motion.div>
           ))}
