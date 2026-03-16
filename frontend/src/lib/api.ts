@@ -1,5 +1,19 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Simple in-memory cache for client-side fetches (pages are "use client" + useEffect,
+// so Next.js fetch revalidate does nothing here)
+const _mem = new Map<string, { data: unknown; exp: number }>();
+const _TTL = 2 * 60 * 1000; // 2 minutes
+
+function _cached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const hit = _mem.get(key);
+  if (hit && Date.now() < hit.exp) return Promise.resolve(hit.data as T);
+  return fetcher().then((data) => {
+    _mem.set(key, { data, exp: Date.now() + _TTL });
+    return data;
+  });
+}
+
 export interface Bundle {
   id: number;
   slug: string;
@@ -61,10 +75,13 @@ export interface Stats {
   sources: { name: string; display_name: string; total_skills: number; last_crawled_at: string }[];
 }
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+async function get<T>(path: string, cache = true): Promise<T> {
+  const fetcher = async () => {
+    const res = await fetch(`${API_BASE}${path}`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json() as Promise<T>;
+  };
+  return cache ? _cached<T>(path, fetcher) : fetcher();
 }
 
 export const api = {
@@ -76,7 +93,7 @@ export const api = {
     get: (slug: string) => get<Bundle>(`/api/bundles/${slug}`),
     installCommand: (slug: string, platform: string) =>
       get<{ platform: string; command: string; bundle: string }>(
-        `/api/bundles/${slug}/install/${platform}`
+        `/api/bundles/${slug}/install/${platform}`, false  // no cache — increments install count
       ),
   },
   skills: {

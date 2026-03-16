@@ -1,10 +1,52 @@
+import json
+import redis as _redis
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from db.database import get_db
 from db.models import Bundle, BundleCommand, Skill
+from config import get_settings
 
 router = APIRouter()
+settings = get_settings()
+
+_LIST_TTL = 300    # 5 minutes
+_DETAIL_TTL = 300  # 5 minutes
+
+try:
+    _cache = _redis.from_url(
+        settings.redis_url, decode_responses=True, socket_connect_timeout=1
+    )
+    _cache.ping()
+except Exception:
+    _cache = None
+
+
+def _list_key(type_: str | None, category: str | None) -> str:
+    return f"bundles:list:{type_ or '*'}:{category or '*'}"
+
+
+def _slug_key(slug: str) -> str:
+    return f"bundles:slug:{slug}"
+
+
+def _cache_get(key: str):
+    if not _cache:
+        return None
+    try:
+        hit = _cache.get(key)
+        return json.loads(hit) if hit else None
+    except Exception:
+        return None
+
+
+def _cache_set(key: str, data, ttl: int) -> None:
+    if not _cache:
+        return
+    try:
+        _cache.setex(key, ttl, json.dumps(data))
+    except Exception:
+        pass
 
 
 @router.get("")
@@ -13,6 +55,11 @@ async def list_bundles(
     category: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    key = _list_key(type, category)
+    cached = _cache_get(key)
+    if cached is not None:
+        return cached
+
     q = select(Bundle).where(Bundle.is_active == True)
     if type:
         q = q.where(Bundle.type == type)
@@ -21,11 +68,19 @@ async def list_bundles(
     q = q.order_by(Bundle.is_featured.desc(), Bundle.install_count.desc())
     result = await db.execute(q)
     bundles = result.scalars().all()
-    return [_bundle_summary(b) for b in bundles]
+    data = [_bundle_summary(b) for b in bundles]
+
+    _cache_set(key, data, _LIST_TTL)
+    return data
 
 
 @router.get("/{slug}")
 async def get_bundle(slug: str, db: AsyncSession = Depends(get_db)):
+    key = _slug_key(slug)
+    cached = _cache_get(key)
+    if cached is not None:
+        return cached
+
     result = await db.execute(
         select(Bundle).where(Bundle.slug == slug, Bundle.is_active == True)
     )
@@ -49,11 +104,13 @@ async def get_bundle(slug: str, db: AsyncSession = Depends(get_db)):
         # preserve order
         skills = [_skill_summary(skill_objs[sid]) for sid in bundle.skill_ids if sid in skill_objs]
 
-    return {
+    data = {
         **_bundle_summary(bundle),
         "skills": skills,
         "commands": commands,
     }
+    _cache_set(key, data, _DETAIL_TTL)
+    return data
 
 
 @router.get("/{slug}/install/{platform}")

@@ -584,13 +584,13 @@ class BundleGenerator:
         category: str,
         role_keywords: list[str] | None = None,
         task_keywords: list[str] | None = None,
-        limit: int = 30,
+        limit: int = 25,
     ) -> list[Skill]:
         """
         Fetch top skills for a bundle.
         Strategy:
-        1. Try keyword match (role_keywords OR task_keywords) across name/tags/role_keywords/task_keywords
-        2. Fall back to category-only if insufficient results
+        1. Pass 1: match on structured arrays (role_keywords, task_keywords, tags) — most precise
+        2. Pass 2: broaden to name/description, still keyword-filtered — never pads with off-topic skills
         """
         keywords = (role_keywords or []) + (task_keywords or [])
 
@@ -598,7 +598,6 @@ class BundleGenerator:
         if category == "fullstack":
             cat_filter = Skill.primary_category.in_(["frontend", "backend", "database", "fullstack"])
         elif category in ("other", "api-design"):
-            # broad match — don't restrict by category when it's a cross-cutting concern
             cat_filter = None
         else:
             cat_filter = Skill.primary_category == category
@@ -606,50 +605,57 @@ class BundleGenerator:
         base_filters = [
             Skill.is_active == True,
             Skill.tier == 1,
-            Skill.quality_score >= 4,
+            Skill.quality_score >= 5,  # higher bar for relevance
         ]
         if cat_filter is not None:
             base_filters.append(cat_filter)
 
-        # ── Pass 1: keyword match ────────────────────────────────────────────
         skills: list[Skill] = []
         if keywords:
-            kw_conditions = [
+            kws = keywords[:20]  # use more keywords for better coverage
+
+            # ── Pass 1: structured field match (tags / role_keywords / task_keywords) ─
+            structured_conditions = [
                 or_(
-                    func.lower(Skill.name).contains(kw.lower()),
-                    func.lower(Skill.description).contains(kw.lower()),
                     func.array_to_string(Skill.role_keywords, ' ').ilike(f'%{kw}%'),
                     func.array_to_string(Skill.task_keywords, ' ').ilike(f'%{kw}%'),
                     func.array_to_string(Skill.tags, ' ').ilike(f'%{kw}%'),
                 )
-                for kw in keywords[:12]  # cap at 12 keywords for query perf
+                for kw in kws
             ]
             skills = (
                 self.db.query(Skill)
-                .filter(*base_filters, or_(*kw_conditions))
-                .order_by((Skill.quality_score * 0.6 + Skill.popularity_score * 0.4).desc())
+                .filter(*base_filters, or_(*structured_conditions))
+                .order_by((Skill.quality_score * 0.7 + Skill.popularity_score * 0.3).desc())
                 .limit(limit * 2)
                 .all()
             )
 
-        # ── Pass 2: category fallback if not enough ──────────────────────────
-        if len(skills) < 15:
-            existing_ids = {s.id for s in skills}
-            fallback_filters = [
-                Skill.is_active == True,
-                Skill.tier == 1,
-                Skill.quality_score >= 3,
-            ]
-            if cat_filter is not None:
-                fallback_filters.append(cat_filter)
-            extra = (
-                self.db.query(Skill)
-                .filter(*fallback_filters)
-                .order_by((Skill.quality_score * 0.6 + Skill.popularity_score * 0.4).desc())
-                .limit(limit)
-                .all()
-            )
-            skills.extend([s for s in extra if s.id not in existing_ids])
+            # ── Pass 2: broaden to name/description, still keyword-gated ────────────
+            # Never falls back to pure-category padding — keeps only relevant skills.
+            if len(skills) < 12:
+                existing_ids = {s.id for s in skills}
+                name_conditions = [
+                    or_(
+                        func.lower(Skill.name).contains(kw.lower()),
+                        func.lower(Skill.description).contains(kw.lower()),
+                    )
+                    for kw in kws
+                ]
+                extra = (
+                    self.db.query(Skill)
+                    .filter(
+                        Skill.is_active == True,
+                        Skill.tier == 1,
+                        Skill.quality_score >= 4,
+                        or_(*name_conditions),   # STILL keyword-filtered — no topic drift
+                        *([] if cat_filter is None else [cat_filter]),
+                    )
+                    .order_by((Skill.quality_score * 0.7 + Skill.popularity_score * 0.3).desc())
+                    .limit(limit)
+                    .all()
+                )
+                skills.extend([s for s in extra if s.id not in existing_ids])
 
         skills = _dedup_parent_child(skills)
         return skills[:limit]
