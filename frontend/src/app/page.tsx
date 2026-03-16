@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "framer-motion";
-import { MagnifyingGlass, ArrowRight, Lightning, CaretRight, Terminal } from "@phosphor-icons/react";
+import { MagnifyingGlass, ArrowRight, Lightning, Terminal } from "@phosphor-icons/react";
 import Link from "next/link";
 import BundleCard from "@/components/BundleCard";
+import Navbar from "@/components/Navbar";
 import { api, type Bundle } from "@/lib/api";
 
 const PLATFORMS = [
@@ -97,29 +98,7 @@ export default function HomePage() {
         style={{ background: "radial-gradient(ellipse 90% 55% at 50% -5%, rgba(124,58,237,0.13) 0%, transparent 65%)" }}
       />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center shadow-lg shadow-violet-950/50">
-              <Lightning size={14} className="text-white" />
-            </div>
-            <span className="font-bold tracking-tight">SkillPack</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm text-white/40">
-            <Link href="/explore" className="hover:text-white transition-colors duration-200">Explore</Link>
-            <Link href="https://github.com" className="hover:text-white transition-colors duration-200">GitHub</Link>
-          </div>
-
-          <Link
-            href="/explore"
-            className="hidden md:flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg border border-violet-500/20 bg-violet-500/8 text-violet-300 hover:bg-violet-500/14 transition-all duration-200"
-          >
-            Browse skills <CaretRight size={13} />
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="relative max-w-5xl mx-auto px-6 pt-28 pb-20 text-center">

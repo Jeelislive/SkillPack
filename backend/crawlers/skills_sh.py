@@ -1,7 +1,7 @@
 """
 skills.sh crawler — v2
 Extracts individual skills from skills.sh __next_f JSON (top 600 by all-time installs)
-and supplements with the trending API (pages 0-7) to reach ~1500 ranked skills.
+and supplements with the trending API (pages 0-24) to reach ~5000 ranked skills.
 
 Each skill is an INDIVIDUAL entry: {source, skillId, name, installs}
 SKILL.md path is resolved per-skill using GitHub git tree API + fuzzy matching.
@@ -293,7 +293,7 @@ class SkillsShCrawler:
         Returns (tier1_enriched, tier2_raw)
         """
         print("[bold blue]Starting skills.sh crawl...[/bold blue]")
-        raw_skills = await self.scrape_leaderboard(max_top=1500)
+        raw_skills = await self.scrape_leaderboard(max_top=5000)
         skills = [self._to_skill_dict(s) for s in raw_skills]
         print(f"[green]Found {len(skills)} skills from leaderboard[/green]")
 

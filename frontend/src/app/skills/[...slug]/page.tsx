@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowSquareOut, Star, DownloadSimple, Lightning, Tag, Terminal, BookOpen, CaretDown, CaretUp } from "@phosphor-icons/react";
+import { ArrowSquareOut, Star, DownloadSimple, Tag, Terminal, BookOpen, CaretDown, CaretUp } from "@phosphor-icons/react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 import { api, type Skill } from "@/lib/api";
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -68,20 +69,7 @@ export default function SkillDetailPage() {
         style={{ background: `radial-gradient(ellipse 60% 35% at 50% -8%, ${cat.text}10 0%, transparent 55%)` }}
       />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center">
-              <Lightning size={14} className="text-white" />
-            </div>
-            <span className="font-bold tracking-tight">SkillPack</span>
-          </Link>
-          <Link href="/explore" className="flex items-center gap-1.5 text-sm text-white/35 hover:text-white transition-colors">
-            <ArrowLeft size={13} /> Browse skills
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="relative max-w-4xl mx-auto px-6 py-12">
 

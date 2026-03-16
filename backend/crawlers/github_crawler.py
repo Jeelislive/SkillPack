@@ -18,6 +18,12 @@ SEARCH_QUERIES = [
     "topic:claude-skills",
     "topic:cursor-rules filename:.cursorrules",
     "filename:SKILL.md topic:mcp",
+    "filename:SKILL.md path:.claude",
+    "filename:SKILL.md language:Markdown",
+    "topic:claude-code-skills",
+    "topic:ai-skills",
+    "filename:SKILL.md stars:>0",
+    "path:.claude/skills extension:md",
 ]
 
 GITHUB_API = "https://api.github.com"

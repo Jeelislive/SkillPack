@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MagnifyingGlass, ArrowRight, Lightning, Star, DownloadSimple, ArrowSquareOut } from "@phosphor-icons/react";
+import { MagnifyingGlass, ArrowRight, Star, DownloadSimple, ArrowSquareOut } from "@phosphor-icons/react";
 import BundleCard from "@/components/BundleCard";
+import Navbar from "@/components/Navbar";
 import { api, type Bundle, type Skill } from "@/lib/api";
 import Link from "next/link";
 
@@ -91,20 +92,7 @@ export default function ExplorePage() {
         style={{ background: "radial-gradient(ellipse 70% 40% at 50% -10%, rgba(124,58,237,0.09) 0%, transparent 60%)" }}
       />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center shadow-lg shadow-violet-950/50">
-              <Lightning size={14} className="text-white" />
-            </div>
-            <span className="font-bold tracking-tight">SkillPack</span>
-          </Link>
-          <Link href="/" className="text-sm text-white/35 hover:text-white transition-colors flex items-center gap-1.5">
-            ← Home
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="relative max-w-7xl mx-auto px-6 py-12">
         {/* Header */}

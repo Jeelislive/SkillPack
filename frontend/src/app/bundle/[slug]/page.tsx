@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DownloadSimple, Package, ArrowSquareOut, CaretDown, CaretUp, Lightning, Star } from "@phosphor-icons/react";
+import { DownloadSimple, Package, ArrowSquareOut, CaretDown, CaretUp, Star } from "@phosphor-icons/react";
 import Link from "next/link";
 import PlatformSelector from "@/components/PlatformSelector";
 import InstallCommand from "@/components/InstallCommand";
+import Navbar from "@/components/Navbar";
 import { api, type Bundle, type Skill } from "@/lib/api";
 
 const CAT_COLORS: Record<string, { text: string; bg: string; border: string }> = {
@@ -61,20 +62,7 @@ export default function BundlePage() {
         style={{ background: `radial-gradient(ellipse 70% 40% at 50% -10%, ${cat.text}10 0%, transparent 60%)` }}
       />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center">
-              <Lightning size={14} className="text-white" />
-            </div>
-            <span className="font-bold tracking-tight">SkillPack</span>
-          </Link>
-          <Link href="/explore" className="flex items-center gap-1.5 text-sm text-white/35 hover:text-white transition-colors">
-            <ArrowLeft size={13} /> Browse
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="relative max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
