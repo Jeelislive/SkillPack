@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/skill-discovery",
-      "schedule": "0 * * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/bundle-curator",
-      "schedule": "0 */3 * * *"
+      "schedule": "0 3 * * *"
     }
   ]
 }
