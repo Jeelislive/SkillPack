@@ -207,15 +207,15 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={stagger}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {(featured.length > 0 ? featured : Array(6).fill(null)).map((bundle, i) => (
-            <motion.div key={bundle?.slug ?? i} variants={fadeUp}>
+            <motion.div
+              key={bundle?.slug ?? i}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: i * 0.07 }}
+            >
               {bundle ? (
                 <BundleCard bundle={bundle} />
               ) : (
@@ -223,7 +223,7 @@ export default function HomePage() {
               )}
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </section>
 
       {/* How it works */}
