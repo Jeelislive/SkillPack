@@ -24,7 +24,7 @@ const tabVariants = {
   exit:   { opacity: 0, y: -8 },
 };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 20;
 
 function getPageNumbers(current: number, totalPages: number): (number | "…")[] {
   if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);

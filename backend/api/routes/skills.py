@@ -10,8 +10,8 @@ from config import get_settings
 router = APIRouter()
 settings = get_settings()
 
-_LIST_TTL = 60       # 1 minute — skills list changes rarely
-_CATS_TTL = 300      # 5 minutes — categories barely change
+_LIST_TTL = 60       # 1 minute - skills list changes rarely
+_CATS_TTL = 300      # 5 minutes - categories barely change
 
 try:
     _cache = _redis.from_url(
@@ -46,7 +46,7 @@ async def list_skills(
     category: str | None = None,
     platform: str | None = None,
     min_quality: float = 0,
-    limit: int = Query(default=50, le=500),
+    limit: int = Query(default=20, le=100),
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
 ):

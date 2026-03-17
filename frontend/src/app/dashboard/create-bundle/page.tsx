@@ -32,7 +32,7 @@ export default function CreateBundlePage() {
   }, [status, router]);
 
   useEffect(() => {
-    api.skills.list({ limit: 50 }).then((res) => {
+    api.skills.list({ limit: 20 }).then((res) => {
       setSkills(Array.isArray(res) ? (res as unknown as Skill[]) : (res.items ?? []));
     }).catch(() => {});
   }, []);
