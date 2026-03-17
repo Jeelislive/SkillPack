@@ -1,11 +1,11 @@
 import json
 import redis as _redis
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from db.database import get_db
-from db.models import Bundle, BundleCommand, Skill
+from db.models import Bundle, BundleCommand, Skill, InstallEvent
 from config import get_settings
 
 router = APIRouter()
@@ -61,7 +61,11 @@ async def list_bundles(
     if cached is not None:
         return cached
 
-    q = select(Bundle).where(Bundle.is_active == True)
+    from sqlalchemy import or_
+    q = select(Bundle).where(
+        Bundle.is_active == True,
+        or_(Bundle.owner_user_id == None, Bundle.is_public == True),
+    )
     if type:
         q = q.where(Bundle.type == type)
     if category:
@@ -117,6 +121,7 @@ async def get_bundle(slug: str, db: AsyncSession = Depends(get_db)):
 async def get_install_command(
     slug: str,
     platform: str,
+    x_user_id: str = Header(default=""),
     db: AsyncSession = Depends(get_db),
 ):
     """Return the install command for a specific bundle + platform."""
@@ -143,6 +148,9 @@ async def get_install_command(
     await db.execute(
         update(Bundle).where(Bundle.id == bundle.id).values(install_count=Bundle.install_count + 1)
     )
+    # Record granular install event when user is authenticated
+    if x_user_id:
+        db.add(InstallEvent(user_id=x_user_id, bundle_id=bundle.id, platform=platform))
     await db.commit()
 
     return {"platform": platform, "command": cmd.command, "bundle": slug}

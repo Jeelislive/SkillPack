@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import bundles, skills, search, crawl, live, cron
+from api.routes import bundles, skills, search, crawl, live, cron, users, user_bundles, saves, teams, ratings
 
 
 @asynccontextmanager
@@ -36,12 +36,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(bundles.router, prefix="/api/bundles", tags=["bundles"])
-app.include_router(skills.router,  prefix="/api/skills",  tags=["skills"])
-app.include_router(search.router,  prefix="/api/search",  tags=["search"])
-app.include_router(crawl.router,   prefix="/api/crawl",   tags=["crawl"])
-app.include_router(live.router,    prefix="/api/live",    tags=["live"])
-app.include_router(cron.router,    prefix="/api/cron",    tags=["cron"])
+app.include_router(bundles.router,      prefix="/api/bundles",    tags=["bundles"])
+app.include_router(skills.router,       prefix="/api/skills",     tags=["skills"])
+app.include_router(search.router,       prefix="/api/search",     tags=["search"])
+app.include_router(crawl.router,        prefix="/api/crawl",      tags=["crawl"])
+app.include_router(live.router,         prefix="/api/live",       tags=["live"])
+app.include_router(cron.router,         prefix="/api/cron",       tags=["cron"])
+app.include_router(users.router,        prefix="/api/user",       tags=["users"])
+app.include_router(user_bundles.router, prefix="/api/user",       tags=["user-bundles"])
+app.include_router(saves.router,        prefix="/api/user/saves", tags=["saves"])
+app.include_router(teams.router,        prefix="/api/teams",      tags=["teams"])
+app.include_router(ratings.router,      prefix="/api/skills",     tags=["ratings"])
 
 
 @app.get("/api/health")

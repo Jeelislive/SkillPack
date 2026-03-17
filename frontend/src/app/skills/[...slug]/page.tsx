@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowSquareOut, Star, DownloadSimple, Tag, Terminal, BookOpen, CaretDown, CaretUp } from "@phosphor-icons/react";
+import { ArrowSquareOut, Star, DownloadSimple, Tag, Terminal, BookOpen, CaretDown, CaretUp, Heart } from "@phosphor-icons/react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import { api, type Skill } from "@/lib/api";
+import { api, type Skill, type RatingAggregate } from "@/lib/api";
+import { useSession } from "next-auth/react";
 
 const PLATFORM_LABELS: Record<string, string> = {
   claude_code: "Claude Code",
@@ -34,12 +35,16 @@ const DEFAULT_CAT = { text: "rgba(255,255,255,0.4)", bg: "rgba(255,255,255,0.05)
 export default function SkillDetailPage() {
   const params    = useParams();
   const slug      = (params.slug as string[]).join("/");
+  const { data: session } = useSession();
 
   const [skill, setSkill]           = useState<Skill | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState("");
   const [showContent, setShowContent] = useState(false);
   const [copied, setCopied]         = useState(false);
+  const [ratings, setRatings]       = useState<RatingAggregate | null>(null);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
 
   useEffect(() => {
     api.skills.get(slug)
@@ -48,11 +53,36 @@ export default function SkillDetailPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  useEffect(() => {
+    // Load ratings when skill is loaded
+    if (skill) {
+      setRatingLoading(true);
+      api.ratings.get(slug)
+        .then((data) => {
+          setRatings(data);
+          setUserRating(data.your_rating || null);
+        })
+        .catch(() => {})
+        .finally(() => setRatingLoading(false));
+    }
+  }, [slug, skill]);
+
   const copyCommand = () => {
     if (!skill?.install_command) return;
     navigator.clipboard.writeText(skill.install_command);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRating = async (rating: number) => {
+    if (!session) return;
+    setRatingLoading(true);
+    try {
+      const data = await api.ratings.submit(slug, rating, session);
+      setRatings(data);
+      setUserRating(rating);
+    } catch { /* ignore */ }
+    finally { setRatingLoading(false); }
   };
 
   if (loading) return <Spinner />;
@@ -132,6 +162,69 @@ export default function SkillDetailPage() {
 
             <span className="font-mono text-[11px] text-white/18 ml-auto hidden sm:block">{skill.slug}</span>
           </div>
+        </motion.div>
+
+        {/* User Ratings */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.08 }}
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-white/55 uppercase tracking-widest">User Ratings</h3>
+            {ratings && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={12}
+                      weight={star <= Math.round(ratings.avg) ? "fill" : "regular"}
+                      className={star <= Math.round(ratings.avg) ? "text-yellow-400" : "text-white/20"}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-white/60">
+                  {ratings.avg.toFixed(1)} ({ratings.count})
+                </span>
+              </div>
+            )}
+          </div>
+
+          {session ? (
+            <div className="space-y-3">
+              <p className="text-xs text-white/40">
+                {userRating ? "Your rating:" : "Rate this skill:"}
+              </p>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => handleRating(rating)}
+                    disabled={ratingLoading}
+                    className="p-1 rounded-lg hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+                  >
+                    <Star
+                      size={20}
+                      weight={rating === userRating ? "fill" : "regular"}
+                      className={rating === userRating ? "text-yellow-400" : "text-white/30 hover:text-yellow-400/60"}
+                    />
+                  </button>
+                ))}
+                {ratingLoading && (
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin ml-2" />
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-white/25">
+              <Link href="/login" className="text-violet-400 hover:text-violet-300 transition-colors">
+                Sign in
+              </Link>{" "}
+              to rate this skill
+            </p>
+          )}
         </motion.div>
 
         {/* Install command */}

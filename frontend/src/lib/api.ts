@@ -1,3 +1,5 @@
+import type { Session } from "next-auth";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Simple in-memory cache for client-side fetches (pages are "use client" + useEffect,
@@ -19,11 +21,13 @@ export interface Bundle {
   slug: string;
   name: string;
   description: string;
-  type: "role" | "task" | "micro";
+  type: "role" | "task" | "micro" | "custom";
   category: string;
   skill_count: number;
   install_count: number;
   is_featured: boolean;
+  is_public?: boolean;
+  owner_user_id?: string;
   skills?: Skill[];
   commands?: Record<string, string>;
 }
@@ -75,6 +79,48 @@ export interface Stats {
   sources: { name: string; display_name: string; total_skills: number; last_crawled_at: string }[];
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  avatar_url: string | null;
+  tier: "free" | "pro";
+}
+
+export interface SavesResponse {
+  skills: Skill[];
+  bundles: Bundle[];
+  saved_skill_ids: number[];
+  saved_bundle_ids: number[];
+}
+
+export interface Team {
+  id: number;
+  slug: string;
+  name: string;
+  owner_user_id: string;
+  canonical_bundle_id: number | null;
+  is_active: boolean;
+  created_at: string;
+  members?: TeamMember[];
+}
+
+export interface TeamMember {
+  user_id: string;
+  role: string;
+  email: string;
+  name: string | null;
+  joined_at: string;
+}
+
+export interface RatingAggregate {
+  avg: number;
+  count: number;
+  your_rating?: number;
+}
+
+// ── base fetch helpers ────────────────────────────────────────────────────────
+
 async function get<T>(path: string, cache = true): Promise<T> {
   const fetcher = async () => {
     const res = await fetch(`${API_BASE}${path}`);
@@ -84,6 +130,55 @@ async function get<T>(path: string, cache = true): Promise<T> {
   return cache ? _cached<T>(path, fetcher) : fetcher();
 }
 
+// ── authed helpers ────────────────────────────────────────────────────────────
+
+function _authHeaders(session: Session | null): Record<string, string> {
+  if (!session?.user) return {};
+  return {
+    "X-User-Id":    session.user.id    ?? "",
+    "X-User-Email": session.user.email ?? "",
+    "X-User-Name":  session.user.name  ?? "",
+    "X-User-Image": session.user.image ?? "",
+  };
+}
+
+async function authedGet<T>(path: string, session: Session | null): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { headers: _authHeaders(session) });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+async function authedPost<T>(path: string, body: unknown, session: Session | null): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ..._authHeaders(session) },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+async function authedPut<T>(path: string, body: unknown, session: Session | null): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ..._authHeaders(session) },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+async function authedDelete<T>(path: string, session: Session | null): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE",
+    headers: _authHeaders(session),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+// ── api object ────────────────────────────────────────────────────────────────
+
 export const api = {
   bundles: {
     list: (params?: { type?: string; category?: string }) => {
@@ -91,10 +186,11 @@ export const api = {
       return get<Bundle[]>(`/api/bundles${q ? `?${q}` : ""}`);
     },
     get: (slug: string) => get<Bundle>(`/api/bundles/${slug}`),
-    installCommand: (slug: string, platform: string) =>
-      get<{ platform: string; command: string; bundle: string }>(
-        `/api/bundles/${slug}/install/${platform}`, false  // no cache — increments install count
-      ),
+    installCommand: (slug: string, platform: string, session?: Session | null) => {
+      const headers = session ? _authHeaders(session) : {};
+      return fetch(`${API_BASE}/api/bundles/${slug}/install/${platform}`, { headers })
+        .then((r) => { if (!r.ok) throw new Error(`API error: ${r.status}`); return r.json(); }) as Promise<{ platform: string; command: string; bundle: string }>;
+    },
   },
   skills: {
     list: (params?: { category?: string; platform?: string; limit?: number; offset?: number }) => {
@@ -117,4 +213,43 @@ export const api = {
       get<Skill>(`/api/live/${owner}/${repo}`),
   },
   stats: () => get<Stats>("/api/crawl/stats"),
+
+  user: {
+    sync:   (session: Session | null) => authedPost<UserProfile>("/api/user/sync", {}, session),
+    me:     (session: Session | null) => authedGet<UserProfile>("/api/user/me", session),
+    bundles: {
+      list:   (session: Session | null) => authedGet<Bundle[]>("/api/user/bundles", session),
+      get:    (slug: string, session: Session | null) => authedGet<Bundle>(`/api/user/bundles/${slug}`, session),
+      create: (body: { name: string; description?: string; skill_ids?: number[]; is_public?: boolean }, session: Session | null) =>
+        authedPost<Bundle>("/api/user/bundles", body, session),
+      update: (slug: string, body: Partial<{ name: string; description: string; skill_ids: number[]; is_public: boolean }>, session: Session | null) =>
+        authedPut<Bundle>(`/api/user/bundles/${slug}`, body, session),
+      delete: (slug: string, session: Session | null) =>
+        authedDelete<{ ok: boolean }>(`/api/user/bundles/${slug}`, session),
+    },
+    saves: {
+      list:         (session: Session | null) => authedGet<SavesResponse>("/api/user/saves", session),
+      saveSkill:    (id: number, session: Session | null) => authedPost<{ ok: boolean; saved: boolean }>(`/api/user/saves/skill/${id}`, {}, session),
+      unsaveSkill:  (id: number, session: Session | null) => authedDelete<{ ok: boolean; saved: boolean }>(`/api/user/saves/skill/${id}`, session),
+      saveBundle:   (id: number, session: Session | null) => authedPost<{ ok: boolean; saved: boolean }>(`/api/user/saves/bundle/${id}`, {}, session),
+      unsaveBundle: (id: number, session: Session | null) => authedDelete<{ ok: boolean; saved: boolean }>(`/api/user/saves/bundle/${id}`, session),
+    },
+  },
+
+  teams: {
+    list:             (session: Session | null) => authedGet<Team[]>("/api/teams", session),
+    get:              (slug: string, session: Session | null) => authedGet<Team>(`/api/teams/${slug}`, session),
+    create:           (body: { name: string; slug?: string }, session: Session | null) => authedPost<Team>("/api/teams", body, session),
+    setCanonical:     (slug: string, bundle_id: number, session: Session | null) => authedPut<{ ok: boolean }>(`/api/teams/${slug}/canonical-bundle`, { bundle_id }, session),
+    inviteMember:     (slug: string, email: string, session: Session | null) => authedPost<{ ok: boolean }>(`/api/teams/${slug}/members`, { email }, session),
+    removeMember:     (slug: string, uid: string, session: Session | null) => authedDelete<{ ok: boolean }>(`/api/teams/${slug}/members/${uid}`, session),
+    installLog:       (slug: string, session: Session | null) => authedGet<object[]>(`/api/teams/${slug}/install-log`, session),
+    installCommand:   (slug: string) => get<{ command: string; team: string }>(`/api/teams/${slug}/install`),
+  },
+
+  ratings: {
+    get:    (slug: string) => get<RatingAggregate>(`/api/skills/${slug}/ratings`, false),
+    submit: (slug: string, rating: number, session: Session | null) =>
+      authedPost<RatingAggregate>(`/api/skills/${slug}/rate`, { rating }, session),
+  },
 };

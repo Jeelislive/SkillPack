@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/SessionProvider";
+import UserSync from "@/components/UserSync";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,6 +46,7 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} ${plusJakarta.variable} antialiased`}
       >
         <AuthSessionProvider>
+          <UserSync />
           {children}
         </AuthSessionProvider>
       </body>

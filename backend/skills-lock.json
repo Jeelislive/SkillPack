@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "performance-optimization": {
+      "source": "supercent-io/skills-template",
+      "sourceType": "github",
+      "computedHash": "5cbae5d5e98c89e02b18cb43d9f7b9175fd95cf3957b2eaafb0f5a32b53205b1"
+    }
+  }
+}

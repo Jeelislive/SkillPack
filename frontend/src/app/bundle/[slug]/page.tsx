@@ -48,7 +48,46 @@ export default function BundlePage() {
   const toggle = (id: number) =>
     setExpanded((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
-  if (loading) return <Spinner label="Loading bundle…" />;
+  if (loading) return (
+    <div className="min-h-screen bg-[#060606] text-white overflow-x-hidden">
+      <div className="fixed inset-0 dot-grid pointer-events-none" />
+      <Navbar />
+      <div className="relative max-w-4xl mx-auto px-6 py-12 animate-pulse">
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-6 w-16 rounded-md bg-white/[0.07]" />
+            <div className="h-4 w-20 rounded bg-white/[0.04]" />
+          </div>
+          <div className="h-10 w-2/3 rounded-xl bg-white/[0.07] mb-3" />
+          <div className="space-y-2 max-w-2xl">
+            <div className="h-4 rounded bg-white/[0.04] w-full" />
+            <div className="h-4 rounded bg-white/[0.04] w-4/5" />
+          </div>
+          <div className="flex gap-5 mt-5">
+            <div className="h-3 w-20 rounded bg-white/[0.04]" />
+            <div className="h-3 w-24 rounded bg-white/[0.04]" />
+          </div>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 mb-10">
+          <div className="h-3 w-28 rounded bg-white/[0.05] mb-5" />
+          <div className="flex gap-2 mb-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-8 w-24 rounded-lg bg-white/[0.05]" />
+            ))}
+          </div>
+          <div className="h-12 rounded-xl bg-white/[0.05]" />
+        </div>
+        <div>
+          <div className="h-5 w-36 rounded bg-white/[0.07] mb-5" />
+          <div className="space-y-1.5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-14 rounded-xl border border-white/[0.07] bg-white/[0.025]" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (error || !bundle) return <NotFound />;
 
   const cat = CAT_COLORS[bundle.category] ?? DEFAULT_CAT;

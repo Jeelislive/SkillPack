@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MagnifyingGlass, ArrowRight, Star, DownloadSimple, ArrowSquareOut } from "@phosphor-icons/react";
+import { MagnifyingGlass, ArrowRight, Star, DownloadSimple, ArrowSquareOut, Heart } from "@phosphor-icons/react";
 import BundleCard from "@/components/BundleCard";
 import Navbar from "@/components/Navbar";
 import { api, type Bundle, type Skill } from "@/lib/api";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const TYPES = ["All", "role", "task", "micro"];
 
@@ -33,6 +34,7 @@ function getPageNumbers(current: number, totalPages: number): (number | "…")[]
 }
 
 export default function ExplorePage() {
+  const { data: session } = useSession();
   const [bundles, setBundles]         = useState<Bundle[]>([]);
   const [skills, setSkills]           = useState<Skill[]>([]);
   const [total, setTotal]             = useState(0);
@@ -43,9 +45,16 @@ export default function ExplorePage() {
   const [activeType, setActiveType]   = useState("All");
   const [tab, setTab]                 = useState<"bundles" | "skills">("bundles");
   const [searching, setSearching]     = useState(false);
+  const [loadingBundles, setLoadingBundles] = useState(true);
+  const [loadingSkills, setLoadingSkills]   = useState(true);
+  const [savedSkillIds, setSavedSkillIds]   = useState<Set<number>>(new Set());
+  const [savedBundleIds, setSavedBundleIds] = useState<Set<number>>(new Set());
+  const [saving, setSaving]           = useState<Set<string>>(new Set());
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadPage = async (page: number) => {
-    setLoadingPage(true);
+  const loadPage = async (page: number, isInitial = false) => {
+    if (isInitial) setLoadingSkills(true);
+    else setLoadingPage(true);
     try {
       const res = await api.skills.list({ limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
       const items: Skill[] = Array.isArray(res) ? (res as unknown as Skill[]) : (res.items ?? []);
@@ -54,31 +63,89 @@ export default function ExplorePage() {
       setTotal(tot);
       setCurrentPage(page);
     } catch { /* ignore */ }
-    finally { setLoadingPage(false); }
+    finally { setLoadingSkills(false); setLoadingPage(false); }
   };
 
   useEffect(() => {
-    api.bundles.list().then(setBundles).catch(() => {});
-    loadPage(1);
-  }, []);
+    Promise.all([
+      api.bundles.list()
+        .then((b) => { setBundles(b); setLoadingBundles(false); })
+        .catch(() => { setLoadingBundles(false); }),
+      loadPage(1, true),
+    ]);
 
-  const handleSearch = async (q: string) => {
+    // Load saved items if logged in
+    if (session) {
+      api.user.saves.list(session)
+        .then((data) => {
+          setSavedSkillIds(new Set(data.saved_skill_ids));
+          setSavedBundleIds(new Set(data.saved_bundle_ids));
+        })
+        .catch(() => {});
+    }
+  }, [session]);
+
+  const handleSearch = (q: string) => {
     setQuery(q);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
     if (!q.trim() || q.length < 2) {
       setIsSearching(false);
-      loadPage(1);
+      setSearching(false);
+      loadPage(1, true);
       return;
     }
-    setIsSearching(true);
     setSearching(true);
+    searchTimer.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const result = await api.search.skills(q);
+        setSkills(result.results);
+        setTotal(result.results.length);
+        setCurrentPage(1);
+        setTab("skills");
+      } catch { /* ignore */ }
+      finally { setSearching(false); }
+    }, 300);
+  };
+
+  const handleSaveSkill = async (skillId: number) => {
+    if (!session) return;
+    const key = `skill-${skillId}`;
+    setSaving((prev) => new Set(prev).add(key));
     try {
-      const result = await api.search.skills(q);
-      setSkills(result.results);
-      setTotal(result.results.length);
-      setCurrentPage(1);
-      setTab("skills");
+      if (savedSkillIds.has(skillId)) {
+        await api.user.saves.unsaveSkill(skillId, session);
+        setSavedSkillIds((prev) => {
+          const next = new Set(prev);
+          next.delete(skillId);
+          return next;
+        });
+      } else {
+        await api.user.saves.saveSkill(skillId, session);
+        setSavedSkillIds((prev) => new Set(prev).add(skillId));
+      }
     } catch { /* ignore */ }
-    finally { setSearching(false); }
+    finally { setSaving((prev) => { const next = new Set(prev); next.delete(key); return next; }); }
+  };
+
+  const handleSaveBundle = async (bundleId: number) => {
+    if (!session) return;
+    const key = `bundle-${bundleId}`;
+    setSaving((prev) => new Set(prev).add(key));
+    try {
+      if (savedBundleIds.has(bundleId)) {
+        await api.user.saves.unsaveBundle(bundleId, session);
+        setSavedBundleIds((prev) => {
+          const next = new Set(prev);
+          next.delete(bundleId);
+          return next;
+        });
+      } else {
+        await api.user.saves.saveBundle(bundleId, session);
+        setSavedBundleIds((prev) => new Set(prev).add(bundleId));
+      }
+    } catch { /* ignore */ }
+    finally { setSaving((prev) => { const next = new Set(prev); next.delete(key); return next; }); }
   };
 
   const filteredBundles = bundles.filter((b) => activeType === "All" || b.type === activeType);
@@ -156,7 +223,9 @@ export default function ExplorePage() {
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
               <span className="ml-2 font-mono text-xs text-white/22">
-                {t === "bundles" ? filteredBundles.length : total || skills.length}
+                {t === "bundles"
+                ? (loadingBundles ? "…" : filteredBundles.length)
+                : (loadingSkills  ? "…" : (total || skills.length))}
               </span>
               {tab === t && (
                 <motion.div
@@ -191,17 +260,27 @@ export default function ExplorePage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredBundles.map((b, i) => (
-                  <motion.div
-                    key={b.slug}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: i * 0.04 }}
-                  >
-                    <BundleCard bundle={b} />
-                  </motion.div>
-                ))}
-                {filteredBundles.length === 0 && (
+                {loadingBundles ? (
+                  Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="h-36 rounded-2xl border border-white/[0.07] bg-white/[0.03] animate-pulse" />
+                  ))
+                ) : filteredBundles.length > 0 ? (
+                  filteredBundles.map((b, i) => (
+                    <motion.div
+                      key={b.slug}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                    >
+                      <BundleCard 
+                        bundle={b}
+                        isSaved={savedBundleIds.has(b.id)}
+                        onSave={() => handleSaveBundle(b.id)}
+                        isLoading={saving.has(`bundle-${b.id}`)}
+                      />
+                    </motion.div>
+                  ))
+                ) : (
                   <p className="col-span-3 text-center py-16 text-white/28 text-sm">No bundles found.</p>
                 )}
               </div>
@@ -209,7 +288,13 @@ export default function ExplorePage() {
           ) : (
             <motion.div key="skills" variants={tabVariants} initial="hidden" animate="show" exit="exit">
               <div className="space-y-1.5">
-                {skills.map((s, i) => {
+                {loadingSkills ? (
+                  Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-14 rounded-xl border border-white/[0.07] bg-white/[0.025] animate-pulse" />
+                  ))
+                ) : skills.length === 0 ? (
+                  <p className="text-center py-16 text-white/28 text-sm">No skills found.</p>
+                ) : skills.map((s, i) => {
                   const catColor = CAT_COLORS[s.primary_category] ?? "rgba(255,255,255,0.4)";
                   return (
                     <motion.div
@@ -218,51 +303,64 @@ export default function ExplorePage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.25, delay: i * 0.025 }}
                     >
-                      <Link href={`/skills/${s.slug}`}>
-                        <motion.div
-                          whileHover={{ x: 3 }}
-                          transition={{ duration: 0.15 }}
-                          className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3.5 hover:border-white/14 hover:bg-white/[0.04] transition-colors cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span
-                              className="w-2 h-2 rounded-full shrink-0"
-                              style={{ background: catColor }}
-                            />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">
-                                {s.name}
-                              </div>
-                              <div className="text-xs text-white/32 truncate max-w-md mt-0.5">
-                                {s.description}
+                      <div className="flex items-center justify-between">
+                        <Link href={`/skills/${s.slug}`} className="flex-1">
+                          <motion.div
+                            whileHover={{ x: 3 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3.5 hover:border-white/14 hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ background: catColor }}
+                              />
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">
+                                  {s.name}
+                                </div>
+                                <div className="text-xs text-white/32 truncate max-w-md mt-0.5">
+                                  {s.description}
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-4 shrink-0 ml-6">
-                            <span
-                              className="text-[11px] font-medium hidden sm:block"
-                              style={{ color: catColor }}
-                            >
-                              {s.primary_category}
-                            </span>
-                            <div className="flex items-center gap-1 text-[11px] text-white/25 hidden md:flex">
-                              <Star size={10} className="text-yellow-400/50" />
-                              {s.quality_score.toFixed(1)}
+                            <div className="flex items-center gap-4 shrink-0 ml-6">
+                              <span
+                                className="text-[11px] font-medium hidden sm:block"
+                                style={{ color: catColor }}
+                              >
+                                {s.primary_category}
+                              </span>
+                              <div className="flex items-center gap-1 text-[11px] text-white/25 hidden md:flex">
+                                <Star size={10} className="text-yellow-400/50" />
+                                {s.quality_score.toFixed(1)}
+                              </div>
+                              <code className="text-[11px] text-green-400/60 font-mono bg-black/30 rounded px-2 py-0.5 hidden lg:block">
+                                {s.install_command?.split(" ").slice(0, 4).join(" ")}…
+                              </code>
+                              <ArrowRight size={13} className="text-white/15 group-hover:text-white/40 transition-colors" />
                             </div>
-                            <code className="text-[11px] text-green-400/60 font-mono bg-black/30 rounded px-2 py-0.5 hidden lg:block">
-                              {s.install_command?.split(" ").slice(0, 4).join(" ")}…
-                            </code>
-                            <ArrowRight size={13} className="text-white/15 group-hover:text-white/40 transition-colors" />
-                          </div>
-                        </motion.div>
-                      </Link>
+                          </motion.div>
+                        </Link>
+                        
+                        {session && (
+                          <button
+                            onClick={() => handleSaveSkill(s.id)}
+                            disabled={saving.has(`skill-${s.id}`)}
+                            className="ml-3 p-2 rounded-lg hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+                          >
+                            <Heart 
+                              size={16} 
+                              weight={savedSkillIds.has(s.id) ? "fill" : "regular"}
+                              className={savedSkillIds.has(s.id) ? "text-red-400" : "text-white/30"}
+                            />
+                          </button>
+                        )}
+                      </div>
                     </motion.div>
                   );
                 })}
-                {skills.length === 0 && (
-                  <p className="text-center py-16 text-white/28 text-sm">No skills found.</p>
-                )}
               </div>
 
               {!isSearching && totalPages > 1 && (

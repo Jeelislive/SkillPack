@@ -1,10 +1,26 @@
 from sqlalchemy import (
     Column, Integer, String, Text, Boolean, Numeric,
-    ARRAY, TIMESTAMP, SmallInteger, ForeignKey, JSON
+    ARRAY, TIMESTAMP, SmallInteger, ForeignKey, JSON, CheckConstraint, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db.database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id         = Column(String, primary_key=True)   # Google OAuth sub
+    email      = Column(String, unique=True, nullable=False)
+    name       = Column(String)
+    avatar_url = Column(String)
+    tier       = Column(String, default="free")     # 'free' | 'pro'
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    bundles = relationship("Bundle", back_populates="owner", foreign_keys="Bundle.owner_user_id")
+    saves   = relationship("UserSave", back_populates="user")
+    ratings = relationship("SkillRating", back_populates="user")
 
 
 class Source(Base):
@@ -103,13 +119,16 @@ class Bundle(Base):
     skill_ids     = Column(ARRAY(Integer), default=[])
     skill_count   = Column(Integer, default=0)
     install_count = Column(Integer, default=0)
-    is_featured   = Column(Boolean, default=False)
-    is_active     = Column(Boolean, default=True)
-    created_by    = Column(String, default="system")
-    created_at    = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    updated_at    = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    is_featured     = Column(Boolean, default=False)
+    is_active       = Column(Boolean, default=True)
+    is_public       = Column(Boolean, default=True)
+    owner_user_id   = Column(String, ForeignKey("users.id"), nullable=True)
+    created_by      = Column(String, default="system")
+    created_at      = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at      = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
     commands = relationship("BundleCommand", back_populates="bundle", cascade="all, delete")
+    owner    = relationship("User", back_populates="bundles", foreign_keys=[owner_user_id])
 
 
 class BundleCommand(Base):
@@ -140,3 +159,78 @@ class CrawlJob(Base):
     created_at     = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     source = relationship("Source", back_populates="crawl_jobs")
+
+
+class UserSave(Base):
+    __tablename__ = "user_saves"
+
+    id         = Column(Integer, primary_key=True)
+    user_id    = Column(String, ForeignKey("users.id"), nullable=False)
+    skill_id   = Column(Integer, ForeignKey("skills.id"), nullable=True)
+    bundle_id  = Column(Integer, ForeignKey("bundles.id"), nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    user   = relationship("User", back_populates="saves")
+    skill  = relationship("Skill")
+    bundle = relationship("Bundle")
+
+    __table_args__ = (
+        CheckConstraint(
+            "(skill_id IS NOT NULL)::int + (bundle_id IS NOT NULL)::int = 1",
+            name="exactly_one_save_target",
+        ),
+    )
+
+
+class Team(Base):
+    __tablename__ = "teams"
+
+    id                  = Column(Integer, primary_key=True)
+    slug                = Column(String, unique=True, nullable=False)
+    name                = Column(String, nullable=False)
+    owner_user_id       = Column(String, ForeignKey("users.id"), nullable=False)
+    canonical_bundle_id = Column(Integer, ForeignKey("bundles.id"), nullable=True)
+    is_active           = Column(Boolean, default=True)
+    created_at          = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    members = relationship("TeamMember", back_populates="team")
+    owner   = relationship("User", foreign_keys=[owner_user_id])
+
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+
+    id        = Column(Integer, primary_key=True)
+    team_id   = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    user_id   = Column(String, ForeignKey("users.id"), nullable=False)
+    role      = Column(String, default="member")   # 'owner' | 'member'
+    joined_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    team = relationship("Team", back_populates="members")
+
+    __table_args__ = (UniqueConstraint("team_id", "user_id"),)
+
+
+class InstallEvent(Base):
+    __tablename__ = "install_events"
+
+    id         = Column(Integer, primary_key=True)
+    user_id    = Column(String, ForeignKey("users.id"), nullable=True)
+    bundle_id  = Column(Integer, ForeignKey("bundles.id"), nullable=False)
+    platform   = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+
+class SkillRating(Base):
+    __tablename__ = "skill_ratings"
+
+    id         = Column(Integer, primary_key=True)
+    user_id    = Column(String, ForeignKey("users.id"), nullable=False)
+    skill_id   = Column(Integer, ForeignKey("skills.id"), nullable=False)
+    rating     = Column(SmallInteger, nullable=False)   # 1–5
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    user  = relationship("User", back_populates="ratings")
+    skill = relationship("Skill")
+
+    __table_args__ = (UniqueConstraint("user_id", "skill_id"),)

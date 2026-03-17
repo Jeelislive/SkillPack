@@ -3,11 +3,13 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  ArrowRight, Star,
+  ArrowRight, Star, Heart,
   Browser, Gear, Stack, Rocket, Brain, ShieldCheck,
   Database, Flask, Cloud, DeviceMobile, ChartBar, Package,
 } from "@phosphor-icons/react";
 import type { Bundle } from "@/lib/api";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 type CatStyle = { Icon: React.ElementType; text: string; bg: string; border: string; glow: string };
 
@@ -26,7 +28,18 @@ const CAT: Record<string, CatStyle> = {
 };
 const DEFAULT_CAT: CatStyle = { Icon: Package, text: "rgba(255,255,255,0.45)", bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.09)", glow: "0 8px 24px rgba(0,0,0,0.3)" };
 
-export default function BundleCard({ bundle }: { bundle: Bundle }) {
+export default function BundleCard({ 
+  bundle, 
+  isSaved = false, 
+  onSave, 
+  isLoading = false 
+}: { 
+  bundle: Bundle; 
+  isSaved?: boolean; 
+  onSave?: () => void; 
+  isLoading?: boolean;
+}) {
+  const { data: session } = useSession();
   const s = CAT[bundle.category] ?? DEFAULT_CAT;
 
   return (
@@ -43,6 +56,24 @@ export default function BundleCard({ bundle }: { bundle: Bundle }) {
             className="absolute top-4 right-4"
             style={{ color: s.text, fill: "currentColor" }}
           />
+        )}
+
+        {session && onSave && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSave();
+            }}
+            disabled={isLoading}
+            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/[0.1] transition-colors disabled:opacity-50"
+          >
+            <Heart 
+              size={14} 
+              weight={isSaved ? "fill" : "regular"}
+              className={isSaved ? "text-red-400" : "text-white/40"}
+            />
+          </button>
         )}
 
         <div className="flex items-start gap-3 mb-3">
