@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Users, Plus, ArrowLeft, ArrowRight, UserCheck, UserList, Shield } from "@phosphor-icons/react";
 import Link from "next/link";
 import { api, type Team } from "@/lib/api";
+import Logo from "@/components/Logo";
 
 const fadeUp = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
@@ -48,9 +49,7 @@ export default function TeamsPage() {
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center shadow-lg shadow-violet-950/50">
-              <Users size={14} className="text-white" />
-            </div>
+            <Logo />
             <span className="font-bold tracking-tight">Teams</span>
           </Link>
           <div className="flex items-center gap-4">

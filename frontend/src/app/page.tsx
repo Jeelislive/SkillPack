@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "framer-motion";
-import { MagnifyingGlass, ArrowRight, Lightning, Terminal } from "@phosphor-icons/react";
+import { MagnifyingGlass, ArrowRight, Terminal } from "@phosphor-icons/react";
 import Link from "next/link";
 import BundleCard from "@/components/BundleCard";
 import Navbar from "@/components/Navbar";
+import Logo from "@/components/Logo";
 import { api, type Bundle } from "@/lib/api";
 
 const PLATFORMS = [
@@ -121,7 +122,7 @@ export default function HomePage() {
           </motion.h1>
 
           <motion.p variants={fadeUp} className="text-lg md:text-xl text-white/42 max-w-2xl mx-auto leading-relaxed">
-            Describe your role. Get a curated bundle of AI agent skills — for Claude Code,
+            Describe your role. Get a curated bundle of AI agent skills - for Claude Code,
             Cursor, Copilot, or any platform. One install command.
           </motion.p>
 
@@ -242,7 +243,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { step: "01", icon: "💬", title: "Describe your role",   color: "#a855f7", desc: "Tell us what you build. Natural language — no config files, no YAML." },
+              { step: "01", icon: "💬", title: "Describe your role",   color: "#a855f7", desc: "Tell us what you build. Natural language - no config files, no YAML." },
               { step: "02", icon: "⚡", title: "Get your bundle",      color: "#3b82f6", desc: "We match the best skills from 110k+ indexed across GitHub and 6 other sources." },
               { step: "03", icon: "✓",  title: "One install command",  color: "#22c55e", desc: "Copy a single command. All skills installed into Claude Code, Cursor, Copilot, or any agent." },
             ].map((item, i) => (
@@ -310,11 +311,9 @@ export default function HomePage() {
       <footer className="border-t border-white/[0.06] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/22">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-violet-600/25 flex items-center justify-center">
-              <Lightning size={10} className="text-violet-400" />
-            </div>
+            <Logo size="sm" />
             <span className="font-medium text-white/38">SkillPack</span>
-            <span>— Free forever</span>
+            <span>- Free forever</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/explore" className="hover:text-white/45 transition-colors">Explore</Link>

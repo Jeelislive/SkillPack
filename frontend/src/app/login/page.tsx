@@ -2,8 +2,9 @@
 
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Lightning, GoogleLogo, ArrowLeft } from "@phosphor-icons/react";
+import { GoogleLogo, ArrowLeft } from "@phosphor-icons/react";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -54,9 +55,7 @@ export default function LoginPage() {
           >
             {/* Logo */}
             <motion.div variants={fadeUp} className="flex justify-center mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-violet-700 flex items-center justify-center shadow-lg shadow-violet-950/60">
-                <Lightning size={24} weight="fill" className="text-white" />
-              </div>
+              <Logo size="lg" />
             </motion.div>
 
             {/* Title */}

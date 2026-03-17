@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Users, Plus, ArrowLeft, Check } from "@phosphor-icons/react";
+import { Plus, ArrowLeft, Check } from "@phosphor-icons/react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import Logo from "@/components/Logo";
 
 const fadeUp = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } };
 
@@ -64,9 +65,7 @@ export default function CreateTeamPage() {
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/dashboard/teams" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center">
-              <Users size={14} className="text-white" />
-            </div>
+            <Logo />
             <span className="font-bold tracking-tight">Create Team</span>
           </Link>
           <Link href="/dashboard/teams" className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">

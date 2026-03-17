@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lightning, MagnifyingGlass, Check, Lock, Globe, ArrowLeft, ArrowRight } from "@phosphor-icons/react";
+import { MagnifyingGlass, Check, Lock, Globe, ArrowLeft, ArrowRight } from "@phosphor-icons/react";
 import Link from "next/link";
 import { api, type Skill } from "@/lib/api";
+import Logo from "@/components/Logo";
 
 const STEPS = ["Info", "Skills", "Settings"];
 
@@ -85,9 +86,7 @@ export default function CreateBundlePage() {
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-[#060606]/75">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center">
-              <Lightning size={14} className="text-white" />
-            </div>
+            <Logo />
             <span className="font-bold tracking-tight">SkillPack</span>
           </Link>
           <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
@@ -126,7 +125,7 @@ export default function CreateBundlePage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {/* Step 0 — Info */}
+            {/* Step 0 - Info */}
             {step === 0 && (
               <motion.div key="info" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <div className="space-y-5">
@@ -163,7 +162,7 @@ export default function CreateBundlePage() {
               </motion.div>
             )}
 
-            {/* Step 1 — Skills */}
+            {/* Step 1 - Skills */}
             {step === 1 && (
               <motion.div key="skills" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <div className="relative mb-4">
@@ -223,7 +222,7 @@ export default function CreateBundlePage() {
               </motion.div>
             )}
 
-            {/* Step 2 — Settings */}
+            {/* Step 2 - Settings */}
             {step === 2 && (
               <motion.div key="settings" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <div className="space-y-4">

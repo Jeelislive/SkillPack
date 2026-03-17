@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Lightning, GithubLogo, GoogleLogo } from "@phosphor-icons/react";
+import { GithubLogo, GoogleLogo } from "@phosphor-icons/react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const { data: session, status } = useSession({ required: false });
@@ -14,9 +15,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-violet-700 flex items-center justify-center shadow-lg shadow-violet-950/50">
-            <Lightning size={14} className="text-white" />
-          </div>
+          <Logo />
           <span className="font-bold tracking-tight">SkillPack</span>
         </Link>
 
