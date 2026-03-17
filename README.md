@@ -24,7 +24,7 @@ Describe your role → get a hand-picked bundle of 30 skills → install them al
 
 ## What is SkillPack?
 
-SkillPack crawls **110,000+ AI agent skills** from [skills.sh](https://skills.sh) and GitHub, scores them with an LLM, and packages the best ones into **role-based bundles** — each with a single install command tailored to your platform.
+SkillPack crawls **110,000+ AI agent skills** from [skills.sh](https://skills.sh) and GitHub, scores them with an LLM, and packages the best ones into **role-based bundles** - each with a single install command tailored to your platform.
 
 | You type | You get |
 |---|---|
@@ -43,11 +43,11 @@ npx skills add vercel-labs/next-skills vercel-labs/agent-skills better-auth/skil
 
 - **110k+ skills indexed** from skills.sh and GitHub, deduplicated and quality-scored
 - **13 curated bundles** across 12 developer roles + task bundles
-- **AI-powered matching** — describe your role in plain English, get the right bundle
+- **AI-powered matching** - describe your role in plain English, get the right bundle
 - **Platform-aware install commands** for Claude Code, Cursor, GitHub Copilot, Continue.dev, and Universal
-- **Tier 1 / Tier 2 system** — top skills stored fully in DB; long-tail fetched live from GitHub on demand
-- **Paginated explore page** — browse all 1,000+ Tier 1 skills with page-number navigation
-- **Zero lock-in** — every skill links back to its original GitHub source
+- **Tier 1 / Tier 2 system** - top skills stored fully in DB; long-tail fetched live from GitHub on demand
+- **Paginated explore page** - browse all 1,000+ Tier 1 skills with page-number navigation
+- **Zero lock-in** - every skill links back to its original GitHub source
 
 ---
 
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
-# Edit .env — set DATABASE_URL, GROQ_API_KEY, GITHUB_TOKEN (see table below)
+# Edit .env - set DATABASE_URL, GROQ_API_KEY, GITHUB_TOKEN (see table below)
 
 # Apply DB schema
 psql $DATABASE_URL < db/schema.sql
@@ -142,7 +142,7 @@ echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
 npm run dev   # http://localhost:3000
 ```
 
-### 4. Run the Crawler (optional — populates the DB)
+### 4. Run the Crawler (optional - populates the DB)
 
 ```bash
 cd backend
@@ -161,15 +161,15 @@ python3 run_crawl.py bundles    # Re-generate bundles only (instant)
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | ✅ | — | Async PostgreSQL URL (`postgresql+asyncpg://...`) |
-| `SYNC_DATABASE_URL` | ✅ | — | Sync PostgreSQL URL for Celery workers |
-| `GROQ_API_KEY` | ✅ | — | LLM for skill tagging and bundle matching |
-| `GITHUB_TOKEN` | ✅ | — | GitHub API — read-only scope is enough |
-| `REDIS_URL` | — | `redis://localhost:6379/0` | Cache + Celery broker |
-| `GITHUB_TOKEN_2` | — | `""` | Second GitHub token for higher rate limits |
-| `ADMIN_TOKEN` | — | `changeme` | Protects `/api/crawl` admin endpoints |
-| `TIER1_MIN_INSTALLS` | — | `50` | Min installs to qualify a skill for Tier 1 |
-| `TIER1_MAX_SKILLS` | — | `25000` | Cap on Tier 1 DB size |
+| `DATABASE_URL` | ✅ | - | Async PostgreSQL URL (`postgresql+asyncpg://...`) |
+| `SYNC_DATABASE_URL` | ✅ | - | Sync PostgreSQL URL for Celery workers |
+| `GROQ_API_KEY` | ✅ | - | LLM for skill tagging and bundle matching |
+| `GITHUB_TOKEN` | ✅ | - | GitHub API - read-only scope is enough |
+| `REDIS_URL` | - | `redis://localhost:6379/0` | Cache + Celery broker |
+| `GITHUB_TOKEN_2` | - | `""` | Second GitHub token for higher rate limits |
+| `ADMIN_TOKEN` | - | `changeme` | Protects `/api/crawl` admin endpoints |
+| `TIER1_MIN_INSTALLS` | - | `50` | Min installs to qualify a skill for Tier 1 |
+| `TIER1_MAX_SKILLS` | - | `25000` | Cap on Tier 1 DB size |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -286,7 +286,7 @@ Pull requests are welcome. For major changes, please open an issue first.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT - see [LICENSE](LICENSE) for details.
 
 ---
 

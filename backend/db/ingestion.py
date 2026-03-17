@@ -1,7 +1,7 @@
 """
 Saves crawled + tagged skills into the database.
 Handles upserts (insert new, update changed, skip unchanged).
-Uses bulk operations — one commit per batch, not per skill.
+Uses bulk operations - one commit per batch, not per skill.
 """
 
 import hashlib

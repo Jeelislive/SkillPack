@@ -1,5 +1,5 @@
 """
-skills.sh crawler — v2
+skills.sh crawler - v2
 Extracts individual skills from skills.sh __next_f JSON (top 600 by all-time installs)
 and supplements with the trending API (pages 0-24) to reach ~5000 ranked skills.
 
@@ -301,7 +301,7 @@ class SkillsShCrawler:
         tier2 = [s for s in skills if s["install_count"] < self.tier1_min_installs]
         print(f"[cyan]Tier 1 (DB store): {len(tier1)} | Tier 2 (index only): {len(tier2)}[/cyan]")
 
-        # Fetch content for Tier 1 — limit concurrency to avoid GitHub rate limits
+        # Fetch content for Tier 1 - limit concurrency to avoid GitHub rate limits
         sem = asyncio.Semaphore(5)
         async with httpx.AsyncClient() as client:
             async def fetch_one(skill):

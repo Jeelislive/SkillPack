@@ -1,5 +1,5 @@
 """
-Crawl management routes — trigger crawls, check job status.
+Crawl management routes - trigger crawls, check job status.
 Admin-use only (protect with env-based token in production).
 """
 

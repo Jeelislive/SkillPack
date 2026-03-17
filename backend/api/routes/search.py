@@ -1,5 +1,5 @@
 """
-Search route — handles:
+Search route - handles:
 1. Keyword search (pg_trgm full-text)
 2. "Describe your role" → returns best matching bundle
 """

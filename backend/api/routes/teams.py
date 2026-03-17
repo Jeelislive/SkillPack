@@ -182,7 +182,7 @@ async def install_log(
 
 @router.get("/{slug}/install")
 async def team_install_command(slug: str, db: AsyncSession = Depends(get_db)):
-    """Public endpoint — returns canonical bundle install command (no auth required)."""
+    """Public endpoint - returns canonical bundle install command (no auth required)."""
     team_result = await db.execute(
         select(Team).where(Team.slug == slug, Team.is_active == True)
     )

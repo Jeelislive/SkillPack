@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SkillPack — Curated AI Agent Skill Bundles",
+  title: "SkillPack",
   description:
     "Discover and install curated AI agent skill bundles for Claude Code, Cursor, Copilot, and more. 110,000+ skills indexed, one install command.",
   openGraph: {

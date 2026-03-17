@@ -19,7 +19,7 @@ CREATE TABLE sources (
 );
 
 -- ──────────────────────────────────────────
--- SKILLS (Tier 1 — stored, high quality)
+-- SKILLS (Tier 1 - stored, high quality)
 -- ──────────────────────────────────────────
 CREATE TABLE skills (
     id                  SERIAL PRIMARY KEY,
@@ -68,7 +68,7 @@ CREATE TABLE skills (
 );
 
 -- ──────────────────────────────────────────
--- SKILL INDEX (Tier 2 — metadata only, live fetch)
+-- SKILL INDEX (Tier 2 - metadata only, live fetch)
 -- ──────────────────────────────────────────
 CREATE TABLE skills_index (
     id              SERIAL PRIMARY KEY,

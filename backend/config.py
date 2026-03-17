@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     admin_token: str = "changeme"
     cron_secret: str = ""
 
-    # Tier 1 threshold — skills with install_count >= this get stored in DB
+    # Tier 1 threshold - skills with install_count >= this get stored in DB
     tier1_min_installs: int = 10
     # Max skills to store in Tier 1 (keep DB under 500MB)
     tier1_max_skills: int = 25000

@@ -10,14 +10,14 @@ def _slug_to_npx_arg(slug: str) -> str:
     """Convert a DB slug to a valid `npx skills add` argument.
 
     skills.sh skills use 3-part slugs (owner/repo/skillId) where the skill
-    lives at .agent-skills/skillId/ inside the repo — not at skillId/ root.
+    lives at .agent-skills/skillId/ inside the repo - not at skillId/ root.
     The `npx skills add` CLI requires the path to be explicit.
     """
     parts = slug.split("/")
     if len(parts) == 3:
         owner, repo, skill_id = parts
         return f"{owner}/{repo}/.agent-skills/{skill_id}"
-    return slug  # 2-part owner/repo slug — works as-is
+    return slug  # 2-part owner/repo slug - works as-is
 
 
 class InstallGenerator:
@@ -89,7 +89,7 @@ class InstallGenerator:
         )
         lines = [
             f"#!/bin/bash",
-            f"# SkillPack universal installer — {bundle_slug}",
+            f"# SkillPack universal installer - {bundle_slug}",
             f"# Works with Claude Code, Cursor, Copilot, Continue.dev",
             "",
             'PLATFORM="${1:-claude_code}"',

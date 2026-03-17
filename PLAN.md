@@ -1,4 +1,4 @@
-# SkillPack — Full Product Plan
+# SkillPack - Full Product Plan
 
 > Aggregate every AI agent skill on the internet. Bundle them by role. Install with one command.
 
@@ -6,13 +6,13 @@
 
 ## 1. The Problem
 
-Every developer using AI agents (Claude Code, Cursor, Copilot, etc.) needs skills — small instruction files that teach the agent how to think about specific tasks. Right now:
+Every developer using AI agents (Claude Code, Cursor, Copilot, etc.) needs skills - small instruction files that teach the agent how to think about specific tasks. Right now:
 
 - Skills are scattered across GitHub, skills.sh, cursor.directory, and dozens of other places
 - Developers discover them randomly or by word of mouth
 - Installing them means finding each one individually and running separate commands
 - There is no concept of "get everything I need as a frontend developer in one shot"
-- Quality is unknown — there's no scoring, no curation, no ranking
+- Quality is unknown - there's no scoring, no curation, no ranking
 
 **Result:** Developers waste time hunting, install random low-quality skills, and never get a complete setup.
 
@@ -74,8 +74,8 @@ Copies ONE command → installs all 30 skills instantly
 **Total target: 110,000+ skills indexed**
 
 ### Tier System
-- **Tier 1 (stored in DB):** Top ~20–25k skills by quality score — instant API response
-- **Tier 2 (live fetch):** Remaining 80k+ — fetched on-demand from GitHub raw URL, cached in Redis 24hr
+- **Tier 1 (stored in DB):** Top ~20–25k skills by quality score - instant API response
+- **Tier 2 (live fetch):** Remaining 80k+ - fetched on-demand from GitHub raw URL, cached in Redis 24hr
 
 ---
 
@@ -122,12 +122,12 @@ Copies ONE command → installs all 30 skills instantly
 ## 6. Database Schema
 
 ```
-sources          — 7 crawl sources (skills_sh, github, microsoft, cursor, continue, mcp...)
-skills           — Tier 1: full content stored (20–25k high-quality skills)
-skills_index     — Tier 2: metadata only, live-fetched on demand (80k+ skills)
-bundles          — 17+ curated role/task bundles
-bundle_commands  — Install commands per bundle per platform (5 platforms)
-crawl_jobs       — Job history, stats, error logs
+sources          - 7 crawl sources (skills_sh, github, microsoft, cursor, continue, mcp...)
+skills           - Tier 1: full content stored (20–25k high-quality skills)
+skills_index     - Tier 2: metadata only, live-fetched on demand (80k+ skills)
+bundles          - 17+ curated role/task bundles
+bundle_commands  - Install commands per bundle per platform (5 platforms)
+crawl_jobs       - Job history, stats, error logs
 ```
 
 ### Storage Budget (Supabase 500MB free)
@@ -190,9 +190,9 @@ Total estimate:                                             ~130MB  ✓ well und
 ```
 
 ### Crawl Schedule
-- **Daily at 2:00 AM UTC** — full crawl of all sources
-- **Daily at 4:00 AM UTC** — bundle regeneration (after crawl)
-- **Change detection** — content hash comparison, only re-process changed skills
+- **Daily at 2:00 AM UTC** - full crawl of all sources
+- **Daily at 4:00 AM UTC** - bundle regeneration (after crawl)
+- **Change detection** - content hash comparison, only re-process changed skills
 
 ---
 
@@ -218,7 +218,7 @@ popularity = log10(install_count + 1) × 2 × 0.7
 ```
 rank = quality_score × 0.6 + popularity_score × 0.4
 ```
-Quality weighted higher than popularity — a deeply written skill beats a viral stub.
+Quality weighted higher than popularity - a deeply written skill beats a viral stub.
 
 ---
 
@@ -305,71 +305,71 @@ esac
 
 ### Bundles
 ```
-GET  /api/bundles                     — list all bundles
-GET  /api/bundles/{slug}              — bundle detail + skills + commands
-GET  /api/bundles/{slug}/install/{platform} — get install command (+ track count)
+GET  /api/bundles                     - list all bundles
+GET  /api/bundles/{slug}              - bundle detail + skills + commands
+GET  /api/bundles/{slug}/install/{platform} - get install command (+ track count)
 ```
 
 ### Skills
 ```
-GET  /api/skills                      — list tier-1 skills (filter by category, platform)
-GET  /api/skills/categories           — category counts
-GET  /api/skills/{owner}/{repo}       — individual skill detail
+GET  /api/skills                      - list tier-1 skills (filter by category, platform)
+GET  /api/skills/categories           - category counts
+GET  /api/skills/{owner}/{repo}       - individual skill detail
 ```
 
 ### Search
 ```
-GET  /api/search?q=...                — full-text search across skills
-GET  /api/search/match-bundle?q=...   — NL input → best bundle match (Groq)
+GET  /api/search?q=...                - full-text search across skills
+GET  /api/search/match-bundle?q=...   - NL input → best bundle match (Groq)
 ```
 
 ### Live Fetch (Tier 2)
 ```
-GET  /api/live/{owner}/{repo}         — fetch SKILL.md on-demand, cache 24hr
+GET  /api/live/{owner}/{repo}         - fetch SKILL.md on-demand, cache 24hr
 ```
 
 ### Admin / Crawl
 ```
-POST /api/crawl/trigger/full          — trigger full crawl
-POST /api/crawl/trigger/skills-sh     — trigger skills.sh crawl only
-POST /api/crawl/trigger/github        — trigger GitHub crawl only
-POST /api/crawl/trigger/bundles       — regenerate bundles
-GET  /api/crawl/stats                 — skill counts, source status
-GET  /api/crawl/jobs                  — crawl job history
+POST /api/crawl/trigger/full          - trigger full crawl
+POST /api/crawl/trigger/skills-sh     - trigger skills.sh crawl only
+POST /api/crawl/trigger/github        - trigger GitHub crawl only
+POST /api/crawl/trigger/bundles       - regenerate bundles
+GET  /api/crawl/stats                 - skill counts, source status
+GET  /api/crawl/jobs                  - crawl job history
 ```
 
 ---
 
 ## 12. Frontend Pages
 
-### `/` — Home
+### `/` - Home
 - Big NL input: "What kind of developer are you?"
 - Rotating placeholder examples
 - Role bundle cards grid (12 cards)
 - Stats bar: skills indexed, bundles, platforms
 - How it works (3 steps)
 
-### `/bundle/[slug]` — Bundle Detail
+### `/bundle/[slug]` - Bundle Detail
 - Bundle name, description, skill count, install count
 - Platform selector tabs (Claude Code / Cursor / Copilot / Continue / Universal)
 - Copy install command (big, prominent)
 - Collapsible skills list (name, slug, tags, quality score, source link)
 - Individual skill install command
 
-### `/explore` — Browse
+### `/explore` - Browse
 - Tab: Bundles | Skills
 - Filter bundles by type (role / task / micro)
 - Search skills by keyword
 - Skills list with inline install command preview
 
-### `/skills/[owner]/[repo]` — Skill Detail *(future)*
+### `/skills/[owner]/[repo]` - Skill Detail *(future)*
 - Full SKILL.md rendered as markdown
 - Quality score + popularity score
 - Bundles that include this skill
 - Install command
 - GitHub repo link
 
-### `/status` — Data Freshness *(future)*
+### `/status` - Data Freshness *(future)*
 - Last crawl time per source
 - Total skills per source
 - Crawl job history
@@ -433,7 +433,7 @@ skillpack/
 
 ## 14. Build Phases
 
-### Phase 1 — Data Foundation ✅ Done
+### Phase 1 - Data Foundation ✅ Done
 - [x] PostgreSQL schema on Supabase (6 tables, indexes, sources seeded)
 - [x] SQLAlchemy models
 - [x] skills.sh scraper
@@ -444,7 +444,7 @@ skillpack/
 - [x] Install command generator (5 platform formats)
 - [x] Celery daily schedule
 
-### Phase 2 — API Layer ✅ Done
+### Phase 2 - API Layer ✅ Done
 - [x] FastAPI app + CORS
 - [x] Bundles routes
 - [x] Skills routes
@@ -452,7 +452,7 @@ skillpack/
 - [x] Live fetch route (tier-2 on-demand)
 - [x] Admin/crawl routes
 
-### Phase 3 — Frontend ✅ Done
+### Phase 3 - Frontend ✅ Done
 - [x] Next.js 14 setup (TypeScript, Tailwind, App Router)
 - [x] Home page (NL search + role cards + stats)
 - [x] Bundle detail page (platform selector + install command + skills list)
@@ -460,13 +460,13 @@ skillpack/
 - [x] BundleCard, InstallCommand, PlatformSelector components
 - [x] Typed API client
 
-### Phase 4 — First Data (Next)
+### Phase 4 - First Data (Next)
 - [ ] Run `run_crawl.py` to populate DB with real skills
 - [ ] Verify bundle generation works with real data
 - [ ] Start FastAPI server locally
 - [ ] Test full user flow end-to-end
 
-### Phase 5 — Deploy
+### Phase 5 - Deploy
 - [ ] Deploy frontend to Vercel
 - [ ] Deploy FastAPI to Render.com
 - [ ] Set up Upstash Redis
@@ -474,20 +474,20 @@ skillpack/
 - [ ] Run production crawl
 - [ ] Domain setup
 
-### Phase 6 — More Sources
+### Phase 6 - More Sources
 - [ ] cursor.directory scraper
 - [ ] Continue.dev hub scraper
 - [ ] MCP registry crawler
 - [ ] microsoft/skills repo crawler
 
-### Phase 7 — Polish
+### Phase 7 - Polish
 - [ ] Individual skill detail pages (`/skills/[owner]/[repo]`)
 - [ ] Status/freshness page
 - [ ] Analytics (Plausible, self-hosted free)
 - [ ] SEO: bundle pages pre-rendered, meta tags, sitemap
 - [ ] Share bundle URL feature
 
-### Phase 8 — Growth
+### Phase 8 - Growth
 - [ ] Submit to GitHub Awesome lists
 - [ ] Post on Hacker News, Reddit r/ClaudeAI, r/cursor
 - [ ] Discord community
@@ -529,13 +529,13 @@ skillpack/
 
 ## 17. Future Ideas (Post-Launch)
 
-- **Custom bundles** — let users create and share their own bundles
-- **Skill submit** — developers can submit their own SKILL.md repos
-- **Browser extension** — detect which agent platform you're on, suggest relevant skills
-- **VS Code extension** — install bundles directly from the editor
-- **Skill updates** — notify users when a skill in their bundle gets updated
-- **Team bundles** — private bundles for dev teams (shared standards)
-- **Skill quality AI review** — use AI to deeply evaluate skill quality monthly
+- **Custom bundles** - let users create and share their own bundles
+- **Skill submit** - developers can submit their own SKILL.md repos
+- **Browser extension** - detect which agent platform you're on, suggest relevant skills
+- **VS Code extension** - install bundles directly from the editor
+- **Skill updates** - notify users when a skill in their bundle gets updated
+- **Team bundles** - private bundles for dev teams (shared standards)
+- **Skill quality AI review** - use AI to deeply evaluate skill quality monthly
 
 ---
 

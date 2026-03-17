@@ -1,5 +1,5 @@
 """
-SkillPack — First Run Pipeline
+SkillPack - First Run Pipeline
 Usage:
   python3 run_crawl.py          # full crawl
   python3 run_crawl.py --test   # quick test (skills.sh only, no GitHub)
@@ -37,7 +37,7 @@ async def run_skills_sh():
         tier1_min_installs=settings.tier1_min_installs,
     )
     tier1_raw, tier2_raw = await crawler.run()
-    print(f"[dim]{ts()}[/dim] Leaderboard done — [green]{len(tier1_raw)} tier-1[/green], [yellow]{len(tier2_raw)} tier-2[/yellow]")
+    print(f"[dim]{ts()}[/dim] Leaderboard done - [green]{len(tier1_raw)} tier-1[/green], [yellow]{len(tier2_raw)} tier-2[/yellow]")
 
     print(f"[dim]{ts()}[/dim] Tagging {len(tier1_raw)} skills with keyword matching...")
     tagger = SkillTagger()
@@ -50,7 +50,7 @@ async def run_skills_sh():
         stats = ingest_crawl_results(db, tier1_tagged, tier2_raw, "skills_sh")
     finally:
         db.close()
-    print(f"[dim]{ts()}[/dim] [green]Saved — inserted:{stats['inserted']} updated:{stats['updated']} skipped:{stats['skipped']}[/green]")
+    print(f"[dim]{ts()}[/dim] [green]Saved - inserted:{stats['inserted']} updated:{stats['updated']} skipped:{stats['skipped']}[/green]")
     return stats
 
 
@@ -77,11 +77,11 @@ async def run_github():
         tokens.append(settings.github_token_2)
 
     print(f"[dim]{ts()}[/dim] Starting GitHub Search API crawl (6 queries × up to 10 pages)")
-    print(f"[dim]{ts()}[/dim] [yellow]GitHub rate limit = 30 req/min — expect ~10-15 min[/yellow]")
+    print(f"[dim]{ts()}[/dim] [yellow]GitHub rate limit = 30 req/min - expect ~10-15 min[/yellow]")
 
     crawler = GitHubCrawler(tokens=tokens)
     skills = await crawler.run(existing_slugs=existing_slugs)
-    print(f"[dim]{ts()}[/dim] GitHub crawl done — [green]{len(skills)} new skills[/green]")
+    print(f"[dim]{ts()}[/dim] GitHub crawl done - [green]{len(skills)} new skills[/green]")
 
     print(f"[dim]{ts()}[/dim] Tagging {len(skills)} skills...")
     tagger = SkillTagger()
@@ -89,7 +89,7 @@ async def run_github():
 
     tier1 = [s for s in tagged if s.get("quality_score", 0) >= 4 and s.get("raw_content")]
     tier2 = [s for s in tagged if s.get("quality_score", 0) < 4 or not s.get("raw_content")]
-    print(f"[dim]{ts()}[/dim] Split — [green]{len(tier1)} tier-1[/green] / [yellow]{len(tier2)} tier-2[/yellow]")
+    print(f"[dim]{ts()}[/dim] Split - [green]{len(tier1)} tier-1[/green] / [yellow]{len(tier2)} tier-2[/yellow]")
 
     print(f"[dim]{ts()}[/dim] Saving to database...")
     db = SyncSessionLocal()
@@ -97,7 +97,7 @@ async def run_github():
         stats = ingest_crawl_results(db, tier1, tier2, "github")
     finally:
         db.close()
-    print(f"[dim]{ts()}[/dim] [green]Saved — inserted:{stats['inserted']} updated:{stats['updated']} skipped:{stats['skipped']}[/green]")
+    print(f"[dim]{ts()}[/dim] [green]Saved - inserted:{stats['inserted']} updated:{stats['updated']} skipped:{stats['skipped']}[/green]")
     return stats
 
 
@@ -120,9 +120,9 @@ async def main():
     test_mode = "--test" in args
     bundles_only = "bundles" in args
 
-    console.rule("[bold magenta]SkillPack — First Run Pipeline[/bold magenta]")
+    console.rule("[bold magenta]SkillPack - First Run Pipeline[/bold magenta]")
     if test_mode:
-        print("[yellow]TEST MODE — skills.sh only, skipping GitHub crawl[/yellow]")
+        print("[yellow]TEST MODE - skills.sh only, skipping GitHub crawl[/yellow]")
 
     t_start = time.time()
 

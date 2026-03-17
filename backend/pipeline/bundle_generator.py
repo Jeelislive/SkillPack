@@ -29,7 +29,7 @@ Bundle: {name}
 Description: {description}
 
 From the candidate skills below, select ONLY those that are directly and clearly \
-relevant to this bundle. Be strict — exclude skills from other domains, unrelated \
+relevant to this bundle. Be strict - exclude skills from other domains, unrelated \
 tools, or anything only tangentially connected.
 
 Candidate skills (slug | name | tags):
@@ -47,7 +47,7 @@ ROLE_BUNDLES = [
     {
         "slug": "frontend",
         "name": "Frontend Developer",
-        "description": "UI, CSS, animations, accessibility, React, Vue, performance — everything frontend.",
+        "description": "UI, CSS, animations, accessibility, React, Vue, performance - everything frontend.",
         "type": "role", "category": "frontend",
         "role_keywords": ["frontend", "ui", "css", "html", "dom", "web", "react", "vue", "angular", "svelte",
                           "tailwind", "sass", "animation", "framer", "accessibility", "a11y", "responsive",
@@ -640,7 +640,7 @@ class BundleGenerator:
             )
             raw = resp.choices[0].message.content.strip()
 
-            # Extract the JSON array robustly — handle markdown fences and surrounding text
+            # Extract the JSON array robustly - handle markdown fences and surrounding text
             match = re.search(r'\[.*?\]', raw, re.DOTALL)
             if not match:
                 raise ValueError("No JSON array found in response")
@@ -651,7 +651,7 @@ class BundleGenerator:
             return result if result else candidates  # fallback if Groq returns nothing
 
         except Exception as e:
-            print(f"[yellow]AI filter failed for '{bundle_def['slug']}': {e} — using keyword results[/yellow]")
+            print(f"[yellow]AI filter failed for '{bundle_def['slug']}': {e} - using keyword results[/yellow]")
             return candidates
 
     def _get_skills_for_bundle(
@@ -664,12 +664,12 @@ class BundleGenerator:
         """
         Fetch top skills for a bundle.
         Strategy:
-        1. Pass 1: match on structured arrays (role_keywords, task_keywords, tags) — most precise
-        2. Pass 2: broaden to name/description, still keyword-filtered — never pads with off-topic skills
+        1. Pass 1: match on structured arrays (role_keywords, task_keywords, tags) - most precise
+        2. Pass 2: broaden to name/description, still keyword-filtered - never pads with off-topic skills
         """
         keywords = (role_keywords or []) + (task_keywords or [])
 
-        # Category filter — fullstack pulls from multiple categories
+        # Category filter - fullstack pulls from multiple categories
         if category == "fullstack":
             cat_filter = Skill.primary_category.in_(["frontend", "backend", "database", "fullstack"])
         elif category in ("other", "api-design"):
@@ -706,7 +706,7 @@ class BundleGenerator:
                 .all()
             )
 
-        # No fallback — no keyword match = no skill added.
+        # No fallback - no keyword match = no skill added.
         skills = _dedup_parent_child(skills)
         return skills[:limit]
 
@@ -767,7 +767,7 @@ class BundleGenerator:
                 skipped += 1
                 continue
 
-            # Step 2: AI filter — keep only truly relevant skills
+            # Step 2: AI filter - keep only truly relevant skills
             skills = self._ai_filter_skills(bundle_def, candidates)
             time.sleep(1.5)  # respect Groq rate limits (~30 RPM free tier)
 

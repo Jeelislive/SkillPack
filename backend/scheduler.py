@@ -3,11 +3,11 @@ SkillPack Scheduler
 Runs background cron jobs using APScheduler.
 
 Jobs:
-  - Every 3h : AI bundle curator  — reviews every bundle, removes irrelevant skills,
+  - Every 3h : AI bundle curator  - reviews every bundle, removes irrelevant skills,
                                     adds better-matching ones using Groq LLM
-  - Every 1h : Skill discovery    — targeted GitHub search for new SKILL.md files
-  - Every 6h : skills.sh refresh  — top-N leaderboard re-crawl
-  - Daily 3am: Full crawl         — skills.sh + GitHub + bundle regen
+  - Every 1h : Skill discovery    - targeted GitHub search for new SKILL.md files
+  - Every 6h : skills.sh refresh  - top-N leaderboard re-crawl
+  - Daily 3am: Full crawl         - skills.sh + GitHub + bundle regen
 """
 
 import asyncio
@@ -42,7 +42,7 @@ _query_rotation_idx = 0   # advances each hourly run
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# JOB 1 — AI Bundle Curator (every 3 hours)
+# JOB 1 - AI Bundle Curator (every 3 hours)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 async def job_ai_bundle_curator():
@@ -80,7 +80,7 @@ async def job_ai_bundle_curator():
                     print(f"[yellow]  Bundle '{bundle.slug}' curation error: {e}[/yellow]")
                     continue
 
-            print(f"[bold green]⏰ [AI Bundle Curator] Done — {updated_total}/{len(bundles)} bundles updated.[/bold green]")
+            print(f"[bold green]⏰ [AI Bundle Curator] Done - {updated_total}/{len(bundles)} bundles updated.[/bold green]")
         finally:
             db.close()
 
@@ -153,7 +153,7 @@ Category: {bundle.category}
 CURRENT SKILLS ({len(current_skills)}):
 {json.dumps([skill_summary(s) for s in current_skills], indent=2)}
 
-CANDIDATE NEW SKILLS ({len(candidates)}) — not yet in bundle:
+CANDIDATE NEW SKILLS ({len(candidates)}) - not yet in bundle:
 {json.dumps([skill_summary(s) for s in candidates], indent=2)}
 
 Task: Return JSON with exactly these keys:
@@ -253,7 +253,7 @@ JSON:"""
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# JOB 2 — Hourly Skill Discovery
+# JOB 2 - Hourly Skill Discovery
 # ═══════════════════════════════════════════════════════════════════════════════
 
 async def job_hourly_skill_discovery():
@@ -324,7 +324,7 @@ async def job_hourly_skill_discovery():
         finally:
             db.close()
 
-        print(f"[bold green]⏰ [Hourly Discovery] Done — +{stats['inserted']} new skills inserted.[/bold green]")
+        print(f"[bold green]⏰ [Hourly Discovery] Done - +{stats['inserted']} new skills inserted.[/bold green]")
 
     except Exception as e:
         print(f"[red]⏰ [Hourly Discovery] Error: {e}[/red]")
@@ -332,7 +332,7 @@ async def job_hourly_skill_discovery():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# JOB 3 — Daily Full Crawl (3am UTC)
+# JOB 3 - Daily Full Crawl (3am UTC)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 async def job_daily_full_crawl():
@@ -361,7 +361,7 @@ _scheduler: AsyncIOScheduler | None = None
 def create_scheduler() -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(timezone="UTC")
 
-    # AI Bundle Curator — every 3 hours
+    # AI Bundle Curator - every 3 hours
     scheduler.add_job(
         job_ai_bundle_curator,
         trigger=IntervalTrigger(hours=3),
@@ -400,7 +400,7 @@ def start_scheduler():
     _scheduler.start()
     print("[bold green]Scheduler started:[/bold green]")
     for job in _scheduler.get_jobs():
-        print(f"  • {job.name} — next run: {job.next_run_time}")
+        print(f"  • {job.name} - next run: {job.next_run_time}")
     return _scheduler
 
 

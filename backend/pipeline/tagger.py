@@ -246,7 +246,7 @@ class SkillTagger:
 
     def tag_batch_fast(self, skills: list[dict]) -> list[dict]:
         """
-        Fast heuristic tagging — no AI, no rate limits.
+        Fast heuristic tagging - no AI, no rate limits.
         Processes all skills instantly using keyword matching.
         Use this for the initial bulk crawl.
         AI tagging (tag_batch) is reserved for edge cases only.
@@ -260,7 +260,7 @@ class SkillTagger:
 
     async def tag_batch(self, skills: list[dict], delay_between: float = 2.0) -> list[dict]:
         """
-        AI tagging via Groq — use only for skills where heuristics give low confidence.
+        AI tagging via Groq - use only for skills where heuristics give low confidence.
         Groq free tier: ~30 req/min → 2s delay between requests.
         """
         tagged = []

@@ -1,5 +1,5 @@
 """
-Live fetch route — fetches Tier 2 skills on demand from GitHub.
+Live fetch route - fetches Tier 2 skills on demand from GitHub.
 Results cached in Redis for 24 hours.
 """
 

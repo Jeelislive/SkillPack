@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 
 /**
  * Silently upserts the authenticated user into the backend on every login.
- * Renders nothing — drop into layout once inside SessionProvider.
+ * Renders nothing - drop into layout once inside SessionProvider.
  */
 export default function UserSync() {
   const { data: session, status } = useSession();

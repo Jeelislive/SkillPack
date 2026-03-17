@@ -5,8 +5,8 @@ Secured with CRON_SECRET env var.
 Vercel automatically sends: Authorization: Bearer <CRON_SECRET>
 
 Jobs:
-  GET /api/cron/skill-discovery  — every 1h: fetch & ingest new unique skills from GitHub
-  GET /api/cron/bundle-curator   — every 3h: AI-curate 10 bundles (least-recently-updated first)
+  GET /api/cron/skill-discovery  - every 1h: fetch & ingest new unique skills from GitHub
+  GET /api/cron/bundle-curator   - every 3h: AI-curate 10 bundles (least-recently-updated first)
 """
 
 import json
@@ -18,7 +18,7 @@ from config import get_settings
 
 router = APIRouter()
 
-# Rotating GitHub queries — advances each hour via UTC hour mod
+# Rotating GitHub queries - advances each hour via UTC hour mod
 _QUERIES = [
     "filename:SKILL.md",
     "filename:skill.md path:.claude/skills",

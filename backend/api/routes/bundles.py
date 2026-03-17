@@ -95,7 +95,7 @@ async def get_bundle(slug: str, db: AsyncSession = Depends(get_db)):
     if not bundle:
         raise HTTPException(status_code=404, detail="Bundle not found")
 
-    # Commands already loaded via selectinload — no extra round-trip
+    # Commands already loaded via selectinload - no extra round-trip
     commands = {c.platform: c.command for c in bundle.commands}
 
     # Fetch skills
@@ -167,6 +167,8 @@ def _bundle_summary(b: Bundle) -> dict:
         "skill_count": b.skill_count,
         "install_count": b.install_count,
         "is_featured": b.is_featured,
+        "is_public": b.is_public,
+        "owner_user_id": b.owner_user_id,
     }
 
 
