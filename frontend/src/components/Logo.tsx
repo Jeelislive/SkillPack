@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 interface LogoProps {
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -16,7 +14,7 @@ export default function Logo({ size = "md", className = "" }: LogoProps) {
 
   return (
     <div className={`flex items-center justify-center ${config.container} ${className}`}>
-      <Image
+      <img
         src="/logo.svg"
         alt="SkillPack"
         width={config.width}
