@@ -3,6 +3,7 @@ import redis as _redis
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 from db.database import get_db
 from db.models import Bundle, BundleCommand, Skill
 from config import get_settings
@@ -82,17 +83,16 @@ async def get_bundle(slug: str, db: AsyncSession = Depends(get_db)):
         return cached
 
     result = await db.execute(
-        select(Bundle).where(Bundle.slug == slug, Bundle.is_active == True)
+        select(Bundle)
+        .options(selectinload(Bundle.commands))
+        .where(Bundle.slug == slug, Bundle.is_active == True)
     )
     bundle = result.scalar_one_or_none()
     if not bundle:
         raise HTTPException(status_code=404, detail="Bundle not found")
 
-    # Fetch commands
-    cmd_result = await db.execute(
-        select(BundleCommand).where(BundleCommand.bundle_id == bundle.id)
-    )
-    commands = {c.platform: c.command for c in cmd_result.scalars().all()}
+    # Commands already loaded via selectinload — no extra round-trip
+    commands = {c.platform: c.command for c in bundle.commands}
 
     # Fetch skills
     skills = []
