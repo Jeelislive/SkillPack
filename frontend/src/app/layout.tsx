@@ -25,6 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://skillpack.io"),
   title: {
     default: "SkillPack — Curated AI Agent Skill Bundles",
     template: "%s | SkillPack"
