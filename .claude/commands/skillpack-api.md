@@ -13,7 +13,7 @@
 ## Critical Gotchas
 - `redirect_slashes=False` on FastAPI app → list routes use `@router.get("")` NOT `"/"`
 - All router files use `@router.get("")` for the list endpoint
-- Install endpoint: `POST /api/bundles/install/{platform}/{slug}` — increments `install_count`, never cached
+- Install endpoint: `POST /api/bundles/install/{platform}/{slug}` - increments `install_count`, never cached
 
 ## Redis Cache Keys
 ```python
@@ -21,7 +21,7 @@
 "bundles:slug:{slug}"          # TTL 5 min
 "live:{owner}:{repo}"          # TTL 24 hr (86400s)
 ```
-Cache NOT explicitly invalidated on write — expires naturally after TTL.
+Cache NOT explicitly invalidated on write - expires naturally after TTL.
 
 ## Adding a New Route
 1. Create `api/routes/my_route.py` with `router = APIRouter(prefix="/api/my-route", tags=["my-route"])`
@@ -47,7 +47,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 ## 3-Part Slug Handling
 - skills.sh slugs: `owner/repo/skillId`
-- API route: `@router.get("/{slug:path}")` — captures forward slashes
+- API route: `@router.get("/{slug:path}")` - captures forward slashes
 - Frontend: `[...slug]` catch-all → reassemble with `.join("/")`
 
 ## Supabase Connection (CRITICAL)

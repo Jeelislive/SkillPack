@@ -25,9 +25,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://skillpack.io"),
+  metadataBase: new URL("https://skillpack.dev"),
   title: {
-    default: "SkillPack — Curated AI Agent Skill Bundles",
+    default: "SkillPack - Curated AI Agent Skill Bundles",
     template: "%s | SkillPack"
   },
   description:
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "SkillPack — Curated AI Agent Skill Bundles",
+    title: "SkillPack - Curated AI Agent Skill Bundles",
     description: "One command for every skill your AI agent needs. 110,000+ skills indexed across 7 sources.",
     type: "website",
     url: "https://skillpack.dev",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SkillPack — Curated AI Agent Skill Bundles",
+    title: "SkillPack - Curated AI Agent Skill Bundles",
     description: "One command for every skill your AI agent needs. 110,000+ skills indexed.",
     images: ["/og-image.png"],
   },

@@ -30,7 +30,7 @@ export async function generateMetadata({
   const name = bundle.name as string;
   const description = (bundle.description as string) ||
     `Install the ${name} skill bundle for Claude Code, Cursor, Copilot, and more. ${bundle.skill_count} curated skills in one command.`;
-  const title = `${name} — AI Agent Skill Bundle`;
+  const title = `${name} - AI Agent Skill Bundle`;
   const url = `https://skillpack.dev/bundle/${slug}`;
 
   return {

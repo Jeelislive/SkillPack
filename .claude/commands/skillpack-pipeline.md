@@ -11,16 +11,16 @@ run_crawl.py
 ```
 
 ## Key Files
-- `backend/run_crawl.py` — entrypoint, CLI flags: `--test`, `bundles`
-- `backend/pipeline/tagger.py` — Groq LLM tagging (batches of 20)
-- `backend/pipeline/bundle_generator.py` — 50+ bundle definitions + AI curation
-- `backend/pipeline/manual_bundle_curator.py` — Claude-curated bundles (no Groq)
-- `backend/pipeline/install_generator.py` — generates npx install commands
-- `backend/db/ingestion.py` — bulk upsert via bulk_insert_mappings
+- `backend/run_crawl.py` - entrypoint, CLI flags: `--test`, `bundles`
+- `backend/pipeline/tagger.py` - Groq LLM tagging (batches of 20)
+- `backend/pipeline/bundle_generator.py` - 50+ bundle definitions + AI curation
+- `backend/pipeline/manual_bundle_curator.py` - Claude-curated bundles (no Groq)
+- `backend/pipeline/install_generator.py` - generates npx install commands
+- `backend/db/ingestion.py` - bulk upsert via bulk_insert_mappings
 
 ## Tier 1 Qualification
 - `quality_score >= 5` AND `install_count >= TIER1_MIN_INSTALLS` (default 10)
-- `TIER1_MAX_SKILLS = 25000` — cap to prevent DB bloat
+- `TIER1_MAX_SKILLS = 25000` - cap to prevent DB bloat
 - Below threshold → `skills_index` (Tier 2, live-fetched from GitHub)
 
 ## Adding a New Skill Source
@@ -30,7 +30,7 @@ run_crawl.py
 4. Slug format: `owner/repo` (GitHub) or `owner/repo/skillId` (skills.sh)
 
 ## Modifying the Tagger Prompt
-- File: `pipeline/tagger.py` — look for `_TAGGER_PROMPT`
+- File: `pipeline/tagger.py` - look for `_TAGGER_PROMPT`
 - Categories must be one of: `frontend, backend, fullstack, devops, ml-ai, security, database, testing, cloud, mobile, data-science`
 - Falls back to keyword heuristics if Groq fails/rate-limits
 - Batch size: 20 skills per Groq call

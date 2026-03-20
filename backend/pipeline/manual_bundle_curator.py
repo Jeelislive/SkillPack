@@ -576,5 +576,5 @@ def run(dry_run: bool = False):
 if __name__ == "__main__":
     dry = "--dry" in sys.argv
     if dry:
-        print("[blue]DRY RUN — no DB changes[/blue]")
+        print("[blue]DRY RUN - no DB changes[/blue]")
     run(dry_run=dry)

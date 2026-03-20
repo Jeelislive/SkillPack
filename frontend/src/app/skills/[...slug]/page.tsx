@@ -33,7 +33,7 @@ export async function generateMetadata({
   const description =
     (skill.description as string) ||
     `Install the ${name} skill for Claude Code, Cursor, and Copilot. ${category} skill with quality score ${skill.quality_score?.toFixed(1)}/10.`;
-  const title = `${name} — ${category} AI Skill`;
+  const title = `${name} - ${category} AI Skill`;
   const url = `https://skillpack.dev/skills/${slugStr}`;
 
   return {

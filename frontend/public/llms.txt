@@ -13,10 +13,10 @@ SkillPack aggregates 110,000+ AI agent skills from GitHub and skills.sh, categor
 
 ## Key Pages
 
-- Homepage: https://skillpack.dev — search by role, get matched bundle
-- Explore: https://skillpack.dev/explore — browse all bundles and skills
-- Bundle pages: https://skillpack.dev/bundle/[slug] — role or task bundle with install command
-- Skill pages: https://skillpack.dev/skills/[owner/repo] — individual skill detail
+- Homepage: https://skillpack.dev - search by role, get matched bundle
+- Explore: https://skillpack.dev/explore - browse all bundles and skills
+- Bundle pages: https://skillpack.dev/bundle/[slug] - role or task bundle with install command
+- Skill pages: https://skillpack.dev/skills/[owner/repo] - individual skill detail
 
 ## Supported Platforms
 
