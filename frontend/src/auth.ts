@@ -9,6 +9,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    authorized({ auth }) {
+      return !!auth; // redirect unauthenticated users to /login
+    },
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
       return session;
