@@ -1,0 +1,38 @@
+# SkillPack
+
+> Curated AI agent skill bundles for Claude Code, Cursor, GitHub Copilot, and Continue.dev. One install command per platform.
+
+SkillPack aggregates 110,000+ AI agent skills from GitHub and skills.sh, categorizes them by developer role, and serves them as curated bundles. Developers describe their role and get a single install command that adds the best skills to their AI coding assistant.
+
+## What SkillPack Does
+
+- Indexes 110,000+ AI agent skills from GitHub and 6 other sources
+- Provides 62+ curated role-based and task-based bundles (frontend, backend, devops, ml-ai, security, etc.)
+- Generates one-line install commands for Claude Code, Cursor, GitHub Copilot, and Continue.dev
+- Uses Groq LLM-powered curation to match skills to bundles by relevance
+
+## Key Pages
+
+- Homepage: https://skillpack.dev — search by role, get matched bundle
+- Explore: https://skillpack.dev/explore — browse all bundles and skills
+- Bundle pages: https://skillpack.dev/bundle/[slug] — role or task bundle with install command
+- Skill pages: https://skillpack.dev/skills/[owner/repo] — individual skill detail
+
+## Supported Platforms
+
+- Claude Code (npx skills add)
+- Cursor (.cursorrules)
+- GitHub Copilot (.github/copilot-instructions.md)
+- Continue.dev (~/.continue/skills/)
+- Universal (bash script)
+
+## Bundle Categories
+
+Role bundles: frontend, backend, fullstack, devops, ml-ai, security, database, testing, react-developer, python-developer, nodejs-developer, nextjs-developer, and more.
+
+Task bundles: setup-auth, add-payments, setup-docker, setup-cicd, write-unit-tests, design-rest-api, setup-database, build-saas, build-chatbot, optimize-performance, and more.
+
+## Contact
+
+- Website: https://skillpack.dev
+- GitHub: https://github.com/skillpack-dev/skillpack
