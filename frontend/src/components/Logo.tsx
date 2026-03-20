@@ -21,8 +21,8 @@ export default function Logo({ size = "md", className = "" }: LogoProps) {
         alt="SkillPack"
         width={config.width}
         height={config.height}
-        className="object-contain brightness-0 invert"
-        style={{ filter: 'brightness(0) invert(1)' }}
+        className="object-contain"
+        priority
       />
     </div>
   );
