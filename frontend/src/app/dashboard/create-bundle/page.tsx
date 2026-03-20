@@ -33,7 +33,8 @@ export default function CreateBundlePage() {
 
   useEffect(() => {
     api.skills.list({ limit: 20 }).then((res) => {
-      setSkills(Array.isArray(res) ? (res as unknown as Skill[]) : (res.items ?? []));
+      const skillsArray = Array.isArray(res) ? (res as unknown as Skill[]) : (res.items ?? []);
+      setSkills(skillsArray);
     }).catch(() => {});
   }, []);
 
@@ -184,11 +185,11 @@ export default function CreateBundlePage() {
                 )}
 
                 <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1">
-                  {skills.map((s) => {
+                  {skills.map((s, index) => {
                     const sel = selectedIds.has(s.id);
                     return (
                       <button
-                        key={s.id}
+                        key={`${s.id}-${index}-${s.slug}`}
                         onClick={() => toggleSkill(s.id)}
                         className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-all ${
                           sel ? "border-violet-500/40 bg-violet-500/10" : "border-white/[0.07] bg-white/[0.025] hover:border-white/14"

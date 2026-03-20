@@ -24,6 +24,9 @@ export default function Navbar() {
           <Link href="/explore" className="hover:text-white transition-colors duration-200">
             Explore
           </Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors duration-200">
+            Dashboard
+          </Link>
           <a
             href="https://github.com/Jeelislive/SkillPack"
             target="_blank"
