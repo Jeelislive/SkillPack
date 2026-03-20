@@ -60,7 +60,7 @@ export default function Navbar() {
             </div>
           ) : (
             <button
-              onClick={() => signIn("google")}
+              onClick={() => signIn("google", { callbackUrl: "/" })}
               className="px-4 py-2 rounded-lg border border-violet-500/20 bg-violet-500/8 text-violet-300 hover:bg-violet-500/14 transition-all duration-200 text-sm flex items-center gap-2"
             >
               <GoogleLogo size={15} />

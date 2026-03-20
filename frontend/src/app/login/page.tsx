@@ -71,7 +71,7 @@ export default function LoginPage() {
             {/* Google sign-in button */}
             <motion.div variants={fadeUp}>
               <motion.button
-                onClick={() => signIn("google")}
+                onClick={() => signIn("google", { callbackUrl: "/" })}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl border border-violet-500/30 bg-white/[0.04] hover:bg-white/[0.08] hover:border-violet-500/50 transition-all duration-200 text-sm font-semibold shadow-lg shadow-black/30 group"
